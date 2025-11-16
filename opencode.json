@@ -2,6 +2,10 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "github-copilot/gpt-4.1",
   "mcp": {
+    "vibe_kanban": {
+      "command": "npx",
+      "args": ["-y", "vibe-kanban@latest", "--mcp"]
+    },
     "mcp-context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp"
