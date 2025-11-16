@@ -2,10 +2,14 @@ import { tool } from "@opencode-ai/plugin";
 import { Database } from "bun:sqlite";
 import { z } from "zod";
 
-const DB_PATH = `${process.env.HOME || "."}/.config/opencode/key-value-store.sqlite`;
+let dbPath = `${process.env.HOME || "."}/.config/opencode/key-value-store.sqlite`;
+
+export function setDatabasePath(path: string) {
+  dbPath = path;
+}
 
 function getDb() {
-  const db = new Database(DB_PATH, { create: true });
+  const db = new Database(dbPath, { create: true });
   db.run(`CREATE TABLE IF NOT EXISTS objects (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT
@@ -64,14 +68,15 @@ export function list(): string {
 }
 
 export default tool({
-  description: "A persistent key-value store (SQLite-backed) with store, retrieve, delete, and list functions. Outputs are human-readable and follow the OpenCode spec.",
+  description: "A persistent key-value store (SQLite-backed) with store, retrieve, delete, list, and set_database functions. Outputs are human-readable and follow the OpenCode spec.",
   args: {
-    action: z.enum(["store", "retrieve", "delete", "list"]),
+    action: z.enum(["store", "retrieve", "delete", "list", "set_database"]),
     key: z.string().optional(),
     value: z.string().optional(),
+    filename: z.string().optional(),
   },
   async execute(args, context) {
-    const { action, key, value } = args;
+    const { action, key, value, filename } = args;
     switch (action) {
       case "store":
         if (!key || typeof value !== "string") return "Key and value required.";
@@ -84,8 +89,37 @@ export default tool({
         return del(key);
       case "list":
         return list();
+      case "set_database": {
+        // Logic for filename parameter
+        const path = require('path');
+        const fs = require('fs');
+        let resolvedPath = '';
+        const defaultName = 'key-value-store.sqlite';
+        const homeConfig = `${process.env.HOME || "."}/.config/opencode/`;
+        if (!filename || typeof filename !== 'string' || filename.trim() === "") {
+          resolvedPath = path.join(homeConfig, defaultName);
+        } else {
+          try {
+            const stat = fs.statSync(filename);
+            if (stat.isDirectory()) {
+              resolvedPath = path.join(filename, defaultName);
+            } else {
+              resolvedPath = filename;
+            }
+          } catch {
+            // If filename ends with a path separator, treat as directory
+            if (filename.endsWith(path.sep)) {
+              resolvedPath = path.join(filename, defaultName);
+            } else {
+              resolvedPath = filename;
+            }
+          }
+        }
+        setDatabasePath(resolvedPath);
+        return `Database path set to: ${resolvedPath}`;
+      }
       default:
-        return "Unknown action. Use store, retrieve, delete, or list.";
+        return "Unknown action. Use store, retrieve, delete, list, or set_database.";
     }
   },
 });

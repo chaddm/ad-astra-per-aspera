@@ -2,11 +2,14 @@ import { describe, it, expect, beforeEach } from "bun:test";
 import * as kv from "../tool/key-value-store";
 import fs from "fs";
 
-const DB_PATH = `${process.env.HOME || "."}/.config/opencode/key-value-store.sqlite`;
+const TEST_DB_PATH = `${process.env.HOME || "."}/.config/opencode/key-value-store-test.sqlite`;
 
 function resetDb() {
-  try { fs.unlinkSync(DB_PATH); } catch {}
+  try { fs.unlinkSync(TEST_DB_PATH); } catch {}
 }
+
+// Set the database to the test DB before all tests
+kv.setDatabasePath(TEST_DB_PATH);
 
 describe("Key-Value Store Tool", () => {
   beforeEach(() => {

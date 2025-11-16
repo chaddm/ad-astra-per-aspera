@@ -5,12 +5,24 @@
     "mcp-context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp"
+    },
+    "tractatus-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "tractatus_thinking@latest"]
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     }
   },
   "agent": {
     "build": {
       "disable": false,
-      "model": "github-copilot/gpt-4.1",
+      "model": "github-copilot/gpt-4.1"
     },
     "plan": {
       "model": "github-copilot/gpt-4.1",

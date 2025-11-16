@@ -15,12 +15,27 @@ By default, OpenCode uses a primary agent that can delegate work to various suba
 
 Primary agents coordinate work across the project by analyzing requests and delegating to appropriate subagents.
 
-### **@deepthought**
-Project orchestrator that delegates tasks to specialized subagents. Analyzes requests, breaks them down into appropriate tasks, and invokes the right subagents to complete them. Parallelizes work when possible and ensures all pieces come together coherently.
 
-**Model**: github-copilot/claude-sonnet-4  
-**Tools**: All tools disabled (delegates to subagents)  
-**Use for**: Complex multi-step projects, coordinating multiple subagents
+### **@ask**
+Project orchestrator that delegates tasks to specialized subagents. Breaks down user problems into tasks for subagents, always using subagents in read-only mode. Notifies the user when subagents are launched and provides updates as tasks are completed.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to subagents)
+**Use for**: Answering project or general questions by orchestrating subagents
+
+### **@claud-think**
+Project orchestrator that coordinates work by delegating tasks to specialized subagents. Does not perform implementation work directly, but analyzes requests and invokes the right subagents. Notifies the user when subagents are launched and provides updates as tasks are completed.
+
+**Model**: github-copilot/claude-sonnet-4
+**Tools**: All tools disabled (delegates to subagents)
+**Use for**: Project orchestration, delegating to subagents
+
+### **@gpt-think**
+Project orchestrator that coordinates work by delegating tasks to specialized subagents. Does not perform implementation work directly, but analyzes requests and invokes the right subagents. Notifies the user when subagents are launched and provides updates as tasks are completed.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to subagents)
+**Use for**: Project orchestration, delegating to subagents
 
 ---
 
@@ -33,15 +48,15 @@ Subagents handle specific specialized tasks and are invoked by primary agents or
 #### **@opencode**
 Modifies `.opencode` configuration in a project. Handles both per-project `.opencode` and global `~/.config/opencode` configuration directories.
 
-**Model**: github-copilot/gpt-4o  
-**Tools**: write, edit, bash, mcp-context7  
+**Model**: github-copilot/gpt-4o
+**Tools**: write, edit, bash, mcp-context7
 **Use for**: Configuration management, setting up OpenCode for new projects
 
 #### **@review**
 Reviews code for quality and best practices. Provides constructive feedback without making direct changes.
 
-**Model**: github-copilot/claude-sonnet-4.5  
-**Tools**: All tools disabled (read-only analysis)  
+**Model**: github-copilot/claude-sonnet-4.5
+**Tools**: All tools disabled (read-only analysis)
 **Use for**: Code review, identifying bugs, performance issues, security concerns
 
 ### Research & Analysis
@@ -49,31 +64,59 @@ Reviews code for quality and best practices. Provides constructive feedback with
 #### **@research-repository**
 Coordinates codebase research by delegating to @find-files and @read-file. Never searches for or reads files directly - always delegates these tasks.
 
-**Model**: github-copilot/gpt-4o  
-**Tools**: All tools disabled except coordination  
+**Model**: github-copilot/gpt-4o
+**Tools**: All tools disabled except coordination
 **Use for**: Analyzing code, finding usages, tracing execution paths, gathering technical details
 
 #### **@read-file**
 Analyzes file contents and provides detailed information. Use for file summaries, documenting modules/classes/functions, and extracting specific line ranges.
 
-**Model**: Specialized for file analysis  
-**Tools**: read, analysis tools  
+**Model**: Specialized for file analysis
+**Tools**: read, analysis tools
 **Use for**: Reading files, documenting code structure, extracting specific sections
+
+#### **@deep-plan**
+Given a plan, returns a markdown list of sequential actions with details. Uses subagents and MCPs to generate and expand plans, always returning a detailed, numbered list of steps.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to subagents)
+**Use for**: Generating detailed action plans from prompts
+
+#### **@deep-build**
+Fully autonomous subagent that plans and executes a prompt without any user interaction, confirmation, or inquiries. Upon receiving a prompt, it generates a step-by-step plan and executes each step using all available tools. It never asks for clarification or confirmation, and always attempts to complete the task to the best of its ability, even if the prompt is ambiguous or incomplete.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: write, edit, bash, fetch, task
+**Use for**: Planning and executing tasks end-to-end with no user interaction
+
+#### **@plan-sequence**
+Given a plan, returns a markdown list of sequential actions by calling the sequential-thinking MCP. Breaks down plans into actionable steps and returns them as a numbered list.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to MCPs)
+**Use for**: Converting plans into actionable sequences
+
+#### **@plan-tractacus**
+Given a prompt, returns a markdown list of sequential actions using tractatus-thinking and plan-sequence. Breaks down prompts into plans and sequences of actions.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to MCPs and subagents)
+**Use for**: Decomposing prompts into plans and sequences
 
 ### Web & External Resources
 
 #### **@web-search**
 Performs web research using DuckDuckGo. Coordinates parallel page fetching via @web-fetch and synthesizes results from multiple sources.
 
-**Model**: Optimized for web research  
-**Tools**: web search, coordination  
+**Model**: Optimized for web research
+**Tools**: web search, coordination
 **Use for**: Finding information online, researching documentation, gathering external resources
 
 #### **@web-fetch**
 Fetches and analyzes webpage content. Use for retrieving information from specific URLs.
 
-**Model**: Web content analysis  
-**Tools**: webfetch, content analysis  
+**Model**: Web content analysis
+**Tools**: webfetch, content analysis
 **Use for**: Retrieving specific webpage content, analyzing online documentation
 
 ### Development Tools
@@ -81,14 +124,28 @@ Fetches and analyzes webpage content. Use for retrieving information from specif
 #### **@mcp-builder**
 Specialized agent for building and managing MCP (Model Context Protocol) servers and integrations.
 
-**Tools**: Development and build tools  
+**Tools**: Development and build tools
 **Use for**: Creating MCP servers, managing protocol integrations
 
 #### **@ollama**
 Manages Ollama models and configurations. Handles downloading/pulling models, deleting models, showing model information, creating custom models with Modelfiles, copying models, managing server operations, and authentication. Provides markdown-formatted responses by default.
 
-**Tools**: bash, write, read  
+**Tools**: bash, write, read
 **Use for**: All Ollama-related model management tasks, server operations, model creation and customization
+
+#### **@git**
+Executes git commands as a non-interactive git expert. Parses instructions, determines the appropriate git commands, executes them, and returns a summary of actions and results.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: bash
+**Use for**: Version control operations, git commands, repository management
+
+#### **@write-file**
+Creates, overwrites, or patches files according to instructions. Ensures only the specified changes are made and preserves unrelated content.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: write, edit, bash
+**Use for**: Creating, editing, and patching files as instructed
 
 ---
 
@@ -169,7 +226,7 @@ Analyze the authentication system and suggest improvements
 
 The primary agent will:
 1. Use @research-repository to analyze the codebase
-2. Use @review to identify potential issues  
+2. Use @review to identify potential issues
 3. Use @web-search to find best practices
 4. Synthesize recommendations
 
@@ -182,7 +239,7 @@ The primary agent will:
 - **@opencode**: Modify configuration files
 - **@review**: Analyze code without modifications
 
-### **Research & Discovery** 
+### **Research & Discovery**
 - **@research-repository**: Coordinate multi-file analysis
 - **@web-search**: Find online resources and documentation
 - **@web-fetch**: Retrieve specific web content
@@ -192,14 +249,13 @@ The primary agent will:
 - **@mcp-builder**: Build and configure MCP servers
 
 ### **Project Coordination**
-- **@deepthought**: Orchestrate complex multi-agent workflows
 
 ---
 
 ## Best Practices
 
 1. **Use Specific Agents**: Invoke subagents directly for specialized tasks rather than using general prompts
-2. **Leverage Coordination**: Let primary agents handle complex workflows that require multiple capabilities  
+2. **Leverage Coordination**: Let primary agents handle complex workflows that require multiple capabilities
 3. **Configure Appropriately**: Set up agent tools and permissions based on your project needs
 4. **Follow Patterns**: Use the established agent patterns when creating custom agents
 
