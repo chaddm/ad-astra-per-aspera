@@ -13,6 +13,41 @@ By default, OpenCode uses a primary agent that can delegate work to various suba
 
 ## Primary Agents
 
+### **@vibe-kanban**
+Expert agent for managing and automating kanban board workflows using the vibe-kanban MCP API. Handles project and task management, automation, and kanban best practices.
+
+**Model**: github-copilot/gpt-4.1
+**Tools**: All tools disabled (delegates to MCP API)
+**Use for**: Listing projects, managing tasks, updating statuses, automating kanban workflows, and integrating with code agents.
+
+**Capabilities:**
+- List all projects and their details
+- List, create, update, and delete tasks in any project
+- Retrieve detailed information about any task
+- Start and track task attempts (for agent/automation workflows)
+- Filter tasks by status (e.g., todo, inprogress, done)
+- Provide best practices for kanban task management
+
+**Supported MCP Calls:**
+- list_projects
+- list_tasks
+- create_task
+- get_task
+- update_task
+- delete_task
+- start_task_attempt
+
+**Usage Example:**
+```
+{
+  "action": "create_task",
+  "project_id": "your-project-id",
+  "title": "My New Task",
+  "description": "Optional details about the task"
+}
+```
+Returns the created task object.
+
 Primary agents coordinate work across the project by analyzing requests and delegating to appropriate subagents.
 
 

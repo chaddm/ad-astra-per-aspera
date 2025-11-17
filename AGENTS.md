@@ -7,49 +7,76 @@ application. Agents working in `~/.config/opencode/` directory are responsible f
 managing and maintaining the global configuration files, adding or modifying agents
 and tools, and ensuring the integrity of the `opencode` setup.
 
-**ALL AGENTS ARE GLOBAL**: NEVER generate per-project-specific configuration files here.
+**ALL AGENTS ARE GLOBAL**: NEVER generate per-project-specific configuration files
+here.
 
-## Responsibilities
+## Agents
 
-1. **Configuration Management**:
-   - Modify and maintain `opencode` configuration files located in this directory.
-   - Ensure all changes are backward-compatible and do not disrupt existing functionality.
-   - Follow the established structure and naming conventions for configuration files.
+Immediately read `docs/agents.md` for a comprehensive overview of agents, their types,
+and usage instructions.  When possible, use subagents to handle specific tasks or
+functionalities.
 
-2. **Agent and Tool Management**:
-   - Add new agents or tools as required by the application.
-   - Modify existing agents or tools to improve functionality or fix issues.
-   - Manage custom commands in the `command/` directory for extending OpenCode functionality.
-   - Ensure all agents and tools are properly documented and adhere to the `opencode` standards.
+## List of Agents
 
-3. **Integrity and Validation**:
-   - Validate configuration changes to ensure they meet the application's requirements.
-   - Test changes thoroughly to prevent regressions.
-   - Ensure that all changes are compatible with the automatic build and test systems of the `opencode` application.
+### Primary Agents
+- **@vibe-kanban**: Manages kanbawhile reserving primary agents for overarching
+  management andn boards and tasks using the vibe-kanban MCP API. Handles
+  project/task management, automation, and kanban best practices.
+- **@ask**: Project orchestrator that delegates tasks to specialized subagents in
+  read-only mode.
+- **@claud-think**: Project orchestrator that analyzes requests and delegates to
+  subagents (does not implement directly).
+- **@gpt-think**: Similar to @claud-think, orchestrates work by delegating to
+  subagents.
 
-## Configuration Guidelines
+### Subagents
 
-1. **File Structure**:
-   - Maintain a clear and logical structure for configuration files.
-   - Use descriptive file names to indicate their purpose.
+#### Code & Repository Management
+- **@opencode**: Modifies `.opencode` configuration files (both per-project and
+  global).
+- **@review**: Reviews code for quality and best practices (read-only, no direct
+  changes).
 
-2. **Formatting**:
-   - Use JSON or YAML for configuration files, depending on the application's requirements.
-   - Ensure proper indentation and consistent formatting.
+#### Research & Analysis
+- **@research-repository**: Coordinates codebase research by delegating to
+  file-finding and reading subagents.
+- **@read-file**: Analyzes file contents, provides summaries, documents code, and
+  extracts sections.
+- **@deep-plan**: Generates detailed, step-by-step action plans from prompts.
+- **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
+  user interaction.
+- **@plan-sequence**: Breaks down plans into actionable, sequential steps.
+- **@plan-tractacus**: Decomposes prompts into plans and sequences using
+  tractatus-thinking.
 
-3. **Version Control**:
-   - Commit changes to configuration files with clear and concise commit messages.
-   - Document the purpose of changes in the commit message.
+#### Web & External Resources
+- **@web-search**: Performs web research using DuckDuckGo and coordinates parallel
+  page fetching.
+- **@web-fetch**: Fetches and analyzes specific webpage content.
 
-4. **Error Handling**:
-   - Validate configuration files for syntax errors before committing.
-   - Use tools or scripts to check for common issues.
+#### Development Tools
+- **@mcp-builder**: Builds and manages MCP (Model Context Protocol) servers and
+  integrations.
+- **@ollama**: Manages Ollama models and configurations (download, delete, info,
+  create, etc.).
+- **@git**: Executes git commands as a non-interactive git expert.
+- **@write-file**: Creates, overwrites, or patches files as instructed.
 
-5. **Documentation**:
-   - Document the purpose and usage of each configuration file.
-   - Include comments within configuration files where necessary to explain complex settings.
+---
 
-## Technical Documentation Guide
+You can invoke any of these agents directly using the @agent-name syntax, for
+example:
+
+```
+@review Please review this code for security issues
+@web-search Find documentation for React hooks
+@ollama Download and set up the llama2 model
+```
+
+If you need more details about a specific agent or want to see usage examples, refer to docs/agents.md or ask for more information.
+
+
+### Available Documentation
 
 This section provides a quick reference to the technical documentation available in
 the `docs` directory. Use these resources to understand and configure various aspects
