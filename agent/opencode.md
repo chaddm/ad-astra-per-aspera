@@ -1,11 +1,12 @@
 ---
 description: Modified the `.opencode` configuration in a project.
-mode: subagent
+mode: primary
 model: github-copilot/gpt-4.1
 tools:
   write: true
   edit: true
   bash: true
+  tools: true
 mcp:
   mcp-context7: true
 ---
