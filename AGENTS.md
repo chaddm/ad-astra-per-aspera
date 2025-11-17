@@ -42,7 +42,6 @@ functionalities.
   file-finding and reading subagents.
 - **@read-file**: Analyzes file contents, provides summaries, documents code, and
   extracts sections.
-- **@deep-plan**: Generates detailed, step-by-step action plans from prompts.
 - **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
   user interaction.
 - **@plan-sequence**: Breaks down plans into actionable, sequential steps.

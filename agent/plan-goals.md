@@ -1,5 +1,5 @@
 ---
-description: Given a prompt, returns a markdown list of sequential actions.
+description: Given a prompt, creates a plan and returns a markdown list of sequential actions.
 mode: subagent
 model: github-copilot/gpt-4.1
 tools:

@@ -110,12 +110,6 @@ Analyzes file contents and provides detailed information. Use for file summaries
 **Tools**: read, analysis tools
 **Use for**: Reading files, documenting code structure, extracting specific sections
 
-#### **@deep-plan**
-Given a plan, returns a markdown list of sequential actions with details. Uses subagents and MCPs to generate and expand plans, always returning a detailed, numbered list of steps.
-
-**Model**: github-copilot/gpt-4.1
-**Tools**: All tools disabled (delegates to subagents)
-**Use for**: Generating detailed action plans from prompts
 
 #### **@deep-build**
 Fully autonomous subagent that plans and executes a prompt without any user interaction, confirmation, or inquiries. Upon receiving a prompt, it generates a step-by-step plan and executes each step using all available tools. It never asks for clarification or confirmation, and always attempts to complete the task to the best of its ability, even if the prompt is ambiguous or incomplete.
