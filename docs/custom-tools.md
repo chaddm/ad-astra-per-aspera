@@ -7,8 +7,11 @@ author:
 
 # Custom Tools | opencode
 
-> ## Excerpt
-> Create tools the LLM can call in opencode.
+Important:
+  - When writing custom tools, read `~/.config/opencode/docs/code-standards.md` for
+    code standards and best practices.
+  - When creating or modifying tools, ensure you update any relevant documentation to
+    keep it accurate and up to date.
 
 ---
 Create tools the LLM can call in opencode.
