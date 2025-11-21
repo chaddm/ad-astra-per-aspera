@@ -5,19 +5,21 @@
 ---
 
 Tools allow the LLM to perform actions in your codebase. OpenCode comes with a set of
-built-in tools, but you can extend it with custom tools or MCP servers.
+built-in tools, but you can extend it with custom tools or MCP servers. By default,
+all tools are **enabled** and don’t need permission to run. But you can configure
+this and control the permissions through your config.
 
-By default, all tools are **enabled** and don’t need permission to run. But you can
-configure this and control the permissions through your config.
+IMPORTANT: _Tools_ is not to be confused with _custom tools_. Custom tools are
+user-defined TypeScript modules that appear as additional tools along side of the
+built-in tools.
 
 ---
 
 ## Configure
 
 You can configure tools globally or per agent. Agent-specific configs override global
-settings.
-
-By default, all tools are set to `true`. To disable a tool, set it to `false`.
+settings. By default, all tools are set to `true`. To disable a tool, set it to
+`false`.
 
 ---
 
