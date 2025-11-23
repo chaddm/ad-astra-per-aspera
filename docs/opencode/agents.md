@@ -121,14 +121,14 @@ concerns
 
 #### **@research-repository**
 
-Coordinates codebase research by delegating to @find-files and @read-file. Never
+Coordinates codebase research by delegating to @files-find and @files-read. Never
 searches for or reads files directly - always delegates these tasks.
 
 **Model**: github-copilot/gpt-4o **Tools**: All tools disabled except coordination
 **Use for**: Analyzing code, finding usages, tracing execution paths, gathering
 technical details
 
-#### **@read-file**
+#### **@files-read**
 
 Analyzes file contents and provides detailed information. Use for file summaries,
 documenting modules/classes/functions, and extracting specific line ranges.
@@ -156,7 +156,7 @@ a numbered list.
 **Model**: github-copilot/gpt-4.1 **Tools**: All tools disabled (delegates to MCPs)
 **Use for**: Converting plans into actionable sequences
 
-#### **@plan-tractacus**
+#### **@plan-goals**
 
 Given a prompt, returns a markdown list of sequential actions using
 tractatus-thinking and plan-sequence. Breaks down prompts into plans and sequences of
@@ -213,7 +213,7 @@ actions and results.
 **Model**: github-copilot/gpt-4.1 **Tools**: bash **Use for**: Version control
 operations, git commands, repository management
 
-#### **@write-file**
+#### **@files-write**
 
 Creates, overwrites, or patches files according to instructions. Ensures only the
 specified changes are made and preserves unrelated content.
@@ -314,7 +314,7 @@ The primary agent will:
 
 ### **File Operations**
 
-- **@read-file**: Read and analyze file contents
+- **@files-read**: Read and analyze file contents
 - **@opencode**: Modify configuration files
 - **@review**: Analyze code without modifications
 

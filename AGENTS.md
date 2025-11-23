@@ -14,11 +14,30 @@ ensuring the integrity of the `opencode` setup.
 
 ## Agents
 
-Immediately read `docs/agents.md` for a comprehensive overview of agents, their
-types, and usage instructions. When possible, use subagents to handle specific tasks
-or functionalities.
+Agents are named configurations opencode that are meant perform specific tasks and/or
+stay within specific constraints. Every agent can be configured with specific name,
+description, agent type, permissions, and a system prompt.
+
+The major benefit of agents is delegation. When an agent delegates to a subagent, the
+subagent received a fresh context and can focus on the specific task at hand without
+being distracted by other context or information. Whatever the subagent returns is
+received by the parent agent as if it were a tool call result.
+
+Agents have two types, Primary and Subagent. Technically, the only difference is that
+Primary agents appear in the user's TUI for direct interaction and can be selected by
+the user. Subagent are not directly selectable by the user and are available only by
+delegation from a Primary agent or another Subagent. An agent can delegate to a
+primary agent; however, primary agents may be written with the expectation of user
+interaction, which will not be available.
+
+For Agents: Immediately read `docs/agents.md` for a comprehensive overview of agents,
+their types, and usage instructions. When possible, use subagents to handle specific
+tasks or functionalities.
 
 ## List of Agents
+
+Any agent can invoke any other agent if they have the `task` permission. Agents are
+named with the `@` prefix.
 
 ### Primary Agents
 
@@ -80,15 +99,16 @@ example:
 ```
 
 If you need more details about a specific agent or want to see usage examples, refer
-to docs/agents.md or ask for more information.
+to `docs/opencode/agents.md` or ask for more information.
 
 ### Available Documentation
 
 This section provides a quick reference to the technical documentation available in
-the `./docs/opencode` directory. Use these resources to understand and configure
-various aspects of OpenCode.
+the `./docs/opencode` directory.
 
-1. **agents.md**
+Use these resources to understand and configure various aspects of OpenCode.
+
+1. **docs/opencode/agents.md**
 
    - **Content**: Configure and use OpenCode's intelligent agents for specialized
      tasks. Explains primary agents (orchestrators) and subagents (specialized
@@ -96,77 +116,56 @@ various aspects of OpenCode.
    - **When to Read**: To learn about agent types, capabilities, and how to invoke or
      configure them.
 
-2. **available-agents.md**
+2. **docs/opencode/available-agents.md**
 
    - **Content**: Lists all available subagents, their purposes, and when to use
      each. Includes usage notes for each agent.
    - **When to Read**: For a comprehensive list of subagents, their roles, and best
      practices for delegation.
 
-3. **builtin-tools.md**
+3. **docs/opencode/builtin-tools.md**
 
    - **Content**: Describes all built-in tool calls, their purposes, parameters, and
      usage notes.
    - **When to Read**: To understand what built-in tools are available and how to use
      them in OpenCode.
 
-4. **code-standards.md**
+4. **docs/opencode/code-standards.md**
 
    - **Content**: Defines code standards and best practices for tools and libraries
      in OpenCode, including documentation, TypeScript usage, and guard clauses.
    - **When to Read**: When developing or reviewing code to ensure it meets project
      standards.
 
-5. **commands.md**
+5. **docs/opencode/commands.md**
 
    - **Content**: Guide to creating and managing custom commands in OpenCode,
      including configuration, file structure, and naming conventions.
    - **When to Read**: When you want to automate workflows or add custom commands to
      OpenCode.
 
-6. **custom-tools.md**
+6. **docs/opencode/custom-tools.md**
 
    - **Content**: Instructions for creating custom tools that the LLM can call,
      including structure, location, and best practices.
-   - **When to Read**: When you need to extend OpenCode with new tools or modify
-     existing ones.
+   - **When to Read**:
+     - Need to create or modify OpenCode custom tools.
+     - Work with code in the `tool/` directory.
 
-7. **mcp-servers.md**
+7. **docs/opencode/mcp-servers.md**
 
    - **Content**: How to add and manage local/remote MCP (Model Context Protocol)
      servers, configuration, and caveats.
    - **When to Read**: When integrating external tools or services into OpenCode
      using MCP.
 
-8. **ollama.md**
+8. **docs/opencode/themes.md**
 
-   - **Content**: Guide to using Ollama for running and managing local AI models,
-     including installation, commands, and integration.
-   - **When to Read**: When you want to run, manage, or integrate local AI models
-     with OpenCode.
+   - **Content**: Guide to selecting, customizing, and managing themes in OpenCode,
+     including terminal requirements and built-in themes.
+   - **When to Read**: When you want to change or create themes for OpenCode.
 
-9. **opencode-cli.md**
-
-   - **Content**: Complete reference for the OpenCode CLI, including installation,
-     commands, options, and best practices.
-   - **When to Read**: For CLI usage, automation, and scripting with OpenCode.
-
-10. **themes.md**
-
-    - **Content**: Guide to selecting, customizing, and managing themes in OpenCode,
-      including terminal requirements and built-in themes.
-    - **When to Read**: When you want to change or create themes for OpenCode.
-
-11. **think.md**
-
-    - **Content**: Describes the project orchestrator's role in OpenCode, focusing on
-      analyzing prompts, breaking them into subagent tasks, and coordinating work.
-      Emphasizes always using subagents for actions and provides guidance on
-      responsibilities and best practices.
-    - **When to Read**: When you want to understand or use the "think"
-      features/agents and best practices for orchestrating work.
-
-12. **tools.md**
-    - **Content**: Overview of tool management in OpenCode, including configuration,
-      enabling/disabling, and the difference between built-in and custom tools.
-    - **When to Read**: When configuring or managing tools for agents in OpenCode.
+9. **docs/opencode/tools.md**
+   - **Content**: Overview of tool management in OpenCode, including configuration,
+     enabling/disabling, and the difference between built-in and custom tools.
+   - **When to Read**: When configuring or managing tools for agents in OpenCode.

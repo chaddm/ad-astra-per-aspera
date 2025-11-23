@@ -2,6 +2,9 @@ import { tool } from "@opencode-ai/plugin";
 import { Database } from "bun:sqlite";
 import { z } from "zod";
 
+// Load Homebrew SQLite on macOS for better performance and features
+// Database.setCustomSQLite("/opt/homebrew/opt/sqlite3/lib/libsqlite3.dylib");
+
 let dbPath = `${process.env.HOME || "."}/.config/opencode/key-value-store.sqlite`;
 
 export function setDatabasePath(path: string) {
@@ -10,6 +13,7 @@ export function setDatabasePath(path: string) {
 
 function getDb() {
   const db = new Database(dbPath, { create: true });
+  db.loadExtension("./lib/vec0");
   db.run(`CREATE TABLE IF NOT EXISTS objects (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT

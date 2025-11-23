@@ -5,12 +5,12 @@
 - **@git** - Manages git operations and repository interactions. Use for version control
   tasks like commits, branches, pushes, pulls, status checks, and repository management.
   Provide what needs to be done and let @git determine how to execute it.
-- **@research-repository** - Coordinates codebase research by delegating to @find-files
-  and @read-file. Use for analyzing code, finding usages, tracing execution paths, and
+- **@research-repository** - Coordinates codebase research by delegating to @files-find
+  and @files-read. Use for analyzing code, finding usages, tracing execution paths, and
   gathering technical details about the codebase.
-- **@find-files** - Finds files and directories matching given criteria using CLI search
+- **@files-find** - Finds files and directories matching given criteria using CLI search
   tools (prefers `rg`). Returns markdown list of full file paths.
-- **@read-file** - Analyzes a file's contents and provides detailed information. Use for
+- **@files-read** - Analyzes a file's contents and provides detailed information. Use for
   file summaries, documenting modules/classes/functions, and extracting specific line
   ranges and modifying contents.
   The subagent should be assigned exactly one file.
@@ -21,9 +21,9 @@
   fetching via @web-fetch and synthesizes results from multiple sources.  If used,
   @web-search will determine which URLs to fetch.
 - **@web-fetch** - Fetches and analyzes webpage content. Use for retrieving information
-  from specific URLs.wp  The subagent should be assigned exactly one URL.
+  from specific URLs. The subagent should be assigned exactly one URL.
   Use multiple agents for multiple files.
-- **@write-file** - Creates or updates files based on instructions. Provide a file path
+- **@files-write** - Creates or updates files based on instructions. Provide a file path
   and instructions on what to write.  Instructions can be the exact content to write
   or the steps to generate the content, including provide the names of other files to
   read or calling specific subagents to gather content first.
