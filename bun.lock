@@ -5,12 +5,12 @@
     "": {
       "dependencies": {
         "@img/sharp-darwin-arm64": "^0.34.5",
-        "@opencode-ai/plugin": "1.0.65",
+        "@opencode-ai/plugin": "1.0.107",
         "@toon-format/toon": "^1.0.0",
         "@xenova/transformers": "^2.17.2",
         "crypto": "^1.0.1",
         "onnxruntime-node": "^1.23.2",
-        "sharp": "0.32.6",
+        "sharp": "^0.32.6",
       },
     },
   },
@@ -26,9 +26,9 @@
 
     "@img/sharp-libvips-darwin-arm64": ["@img/sharp-libvips-darwin-arm64@1.2.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-zqjjo7RatFfFoP0MkQ51jfuFZBnVE2pRiaydKJ1G/rHZvnsrHAOcQALIi9sA5co5xenQdTugCvtb1cuf78Vf4g=="],
 
-    "@opencode-ai/plugin": ["@opencode-ai/plugin@1.0.65", "", { "dependencies": { "@opencode-ai/sdk": "1.0.65", "zod": "4.1.8" } }, "sha512-2xUpIoluZIFW8b6pMskh8NpQ4FiuPdLzQNYOrxYfFVk5x16eMsa2w0Yq02k8V/j8pevc6n4nm/t3ilcJDDmXaQ=="],
+    "@opencode-ai/plugin": ["@opencode-ai/plugin@1.0.107", "", { "dependencies": { "@opencode-ai/sdk": "1.0.107", "zod": "4.1.8" } }, "sha512-NycH+vvhRHVzriy7idfU7/h+2bPv1JqGn1FOWUCS5vGKbrEtcBDvnMkX1duy6iNHwszD1G8LHGrb3Uv/pLKY1A=="],
 
-    "@opencode-ai/sdk": ["@opencode-ai/sdk@1.0.65", "", {}, "sha512-35aOmXhRHNPlx0ThhYwudfZhP1Sg8y94Wsqm+XsgGfHATllQvQjNVOVPfSp3TW3xCAoJ0/PXJlcYjPS3kZDeNA=="],
+    "@opencode-ai/sdk": ["@opencode-ai/sdk@1.0.107", "", {}, "sha512-eew/s6qnJFkfakrFTPpk9hRuriqMmve4g+pBjBEQrfEJg+WTR5IHucENS3ayK4XLWGHHFXt3LxSgBMeQm7LihQ=="],
 
     "@protobufjs/aspromise": ["@protobufjs/aspromise@1.1.2", "", {}, "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="],
 
