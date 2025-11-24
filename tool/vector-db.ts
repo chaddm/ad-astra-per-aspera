@@ -62,10 +62,21 @@ function getDb(): Database {
   
   // Create the vector_store table if it doesn't exist
   db.run(`CREATE TABLE IF NOT EXISTS vector_store (
-    embedding_text TEXT PRIMARY KEY,
+    key TEXT PRIMARY KEY,
+    embedding_text TEXT UNIQUE,
     value TEXT,
     embedding VECTOR(${EMBEDDING_DIMENSION})
   )`);
+
+  // Migration: assign UUIDs to existing rows if missing
+  const rows = db.query('SELECT rowid, embedding_text FROM vector_store WHERE key IS NULL OR key = ""').all();
+  if (rows && rows.length > 0) {
+    const crypto = require('crypto');
+    for (const row of rows) {
+      const uuid = crypto.randomUUID();
+      db.query('UPDATE vector_store SET key = ?1 WHERE rowid = ?2').run(uuid, row.rowid);
+    }
+  }
   
   return db;
 }
@@ -111,23 +122,30 @@ export async function import_file(filepath?: string): Promise<string> {
 }
 
 export async function store(embedding_text: string, value: string): Promise<string> {
-
   try {
     const db = getDb();
-    
-// Generate embedding for the embedding_text
+    const crypto = require('crypto');
+    // Check if embedding_text already exists
+    const existing = db.query('SELECT key FROM vector_store WHERE embedding_text = ?1').get(embedding_text);
+    // Generate embedding
     const embedding = await generateEmbedding(embedding_text);
     const embeddingArray = Array.from(embedding);
     const embeddingJson = JSON.stringify(embeddingArray);
-    
-    // Convert to vec_f32 format for sqlite-vec
-    db.query(
-      `INSERT INTO vector_store (embedding_text, value, embedding) 
-       VALUES (?1, ?2, vec_f32(?3))
-       ON CONFLICT(embedding_text) DO UPDATE SET value=excluded.value, embedding=excluded.embedding`
-    ).run(embedding_text, value, embeddingJson);
-    
-    return `Embedding text "${embedding_text}" stored successfully with embedding.`;
+    let key: string;
+    if (existing && existing.key) {
+      // Update existing row
+      db.query(
+        `UPDATE vector_store SET value = ?1, embedding = vec_f32(?2) WHERE embedding_text = ?3`
+      ).run(value, embeddingJson, embedding_text);
+      key = existing.key;
+    } else {
+      // Insert new row with UUID
+      key = crypto.randomUUID();
+      db.query(
+        `INSERT INTO vector_store (key, embedding_text, value, embedding) VALUES (?1, ?2, ?3, vec_f32(?4))`
+      ).run(key, embedding_text, value, embeddingJson);
+    }
+    return key;
   } catch (e) {
     return `Error storing key: ${e instanceof Error ? e.message : String(e)}`;
   }
@@ -138,16 +156,16 @@ export async function store(embedding_text: string, value: string): Promise<stri
  * @param key - The key to retrieve
  * @returns The value or empty string if not found
  */
-export function retrieve(embedding_text: string): string {
+export function retrieve(key: string): string {
   try {
     const db = getDb();
-    const row = db.query(`SELECT value FROM vector_store WHERE embedding_text = ?1`).get(embedding_text);
-    
-    if (!row || typeof row !== 'object' || row === null) return "";
-    
-    const value = (row as Record<string, any>)["value"];
+    // Partial UUID support
+    let matchRows = db.query(`SELECT key, value FROM vector_store WHERE key LIKE ?1`).all(key + '%');
+    if (!matchRows || matchRows.length === 0) return "Error: No key matches";
+    if (matchRows.length === 0) return "Error: No key matches";
+    if (matchRows.length > 1) return "Error: Multiple keys match";
+    const value = matchRows[0].value;
     if (typeof value !== "string") return "";
-    
     return value;
   } catch (e) {
     return "";
@@ -159,16 +177,17 @@ export function retrieve(embedding_text: string): string {
  * @param key - The key to delete
  * @returns The deleted key or empty string if not found
  */
-export function del(embedding_text: string): string {
+export function del(key: string): string {
   try {
     const db = getDb();
-    const row = db.query(`SELECT embedding_text FROM vector_store WHERE embedding_text = ?1`).get(embedding_text);
-    
-    if (!row || typeof row !== 'object' || row === null) return "";
-    
-    db.query(`DELETE FROM vector_store WHERE embedding_text = ?1`).run(embedding_text);
-    
-    return embedding_text;
+    // Partial UUID support
+    let matchRows = db.query(`SELECT key FROM vector_store WHERE key LIKE ?1`).all(key + '%');
+    if (!matchRows || matchRows.length === 0) return "Error: No key matches";
+    if (matchRows.length === 0) return "Error: No key matches";
+    if (matchRows.length > 1) return "Error: Multiple keys match";
+    const fullKey = matchRows[0].key;
+    db.query(`DELETE FROM vector_store WHERE key = ?1`).run(fullKey);
+    return fullKey;
   } catch (e) {
     return "";
   }
@@ -184,12 +203,10 @@ export function list(limit: number = 50, offset: number = 0): string {
   try {
     const db = getDb();
     const rows = db.query(
-      `SELECT embedding_text FROM vector_store LIMIT ?1 OFFSET ?2`
+      `SELECT key, embedding_text, value, embedding FROM vector_store LIMIT ?1 OFFSET ?2`
     ).all(limit, offset);
-    
     if (!rows.length) return "[]";
-    
-    return JSON.stringify(rows.map((r: any) => r.embedding_text));
+    return JSON.stringify(rows);
   } catch (e) {
     return "[]";
   }
@@ -213,9 +230,10 @@ export async function search(query: string, topK: number = 5): Promise<string> {
     // Perform similarity search using cosine distance
     const rows = db.query(
       `SELECT
+         key,
          embedding_text,
-        value,
-        vec_distance_cosine(embedding, vec_f32(?1)) AS score
+         value,
+         vec_distance_cosine(embedding, vec_f32(?1)) AS score
       FROM vector_store
       ORDER BY score ASC
       LIMIT ?2`
@@ -223,8 +241,8 @@ export async function search(query: string, topK: number = 5): Promise<string> {
     
     if (!rows.length) return "[]";
     
-    // Remap key to embedding_text in result objects for compatibility with tests
-return JSON.stringify(rows.map((row: any) => ({
+    return JSON.stringify(rows.map((row: any) => ({
+  key: row.key,
   embedding_text: row.embedding_text,
   value: row.value,
   score: row.score
@@ -238,12 +256,13 @@ export default tool({
   description: "A persistent, SQLite-backed vector store for RAG and semantic search. Stores key-value pairs with embeddings (384-dim using Xenova/all-MiniLM-L6-v2) and supports similarity search using sqlite-vec extension.",
    args: {
     action: z.enum(["store", "retrieve", "delete", "list", "search", "set_database", "import_file"]).describe("Action to perform: store, retrieve, delete, list, search, set_database, or import_file"),
-    embedding_text: z.string().optional().describe("The text to embed and use as the primary key for storage, retrieval, or deletion"),
+    key: z.string().optional().describe("The UUID key for retrieval or deletion"),
+    embedding_text: z.string().optional().describe("The text to embed and use for storage"),
     value: z.string().optional().describe("The value to store with the embedding_text"),
     filepath: z.string().optional().describe("Path to the file to import as a vector (for import_file action)"),
     query: z.string().optional().describe("Search query string for similarity search"),
     topK: z.number().optional().describe("Number of results to return for search (default: 5)"),
-    limit: z.number().optional().describe("Maximum number of embedding_texts to return for list (default: 50)"),
+    limit: z.number().optional().describe("Maximum number of rows to return for list (default: 50)"),
     offset: z.number().optional().describe("Offset for pagination in list (default: 0)"),
     filename: z.string().optional().describe("Path to the SQLite database file"),
   },
@@ -258,16 +277,16 @@ export default tool({
         return await store(embedding_text, value);
         
       case "retrieve":
-        if (!embedding_text) {
-          return "Error: embedding_text is required for retrieve action.";
+        if (!args.key) {
+          return "Error: key is required for retrieve action.";
         }
-        return retrieve(embedding_text);
+        return retrieve(args.key);
         
       case "delete":
-        if (!embedding_text) {
-          return "Error: embedding_text is required for delete action.";
+        if (!args.key) {
+          return "Error: key is required for delete action.";
         }
-        return del(embedding_text);
+        return del(args.key);
         
       case "list":
         return list(limit, offset);

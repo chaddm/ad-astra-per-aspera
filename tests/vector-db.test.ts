@@ -16,60 +16,78 @@ describe("Vector DB Tool", () => {
     resetDb();
   });
 
-  it("should store a value with embedding and return a success message", async () => {
-    const result = await vdb.store("apple computer", "fruit company / hardware vendor");
-    expect(result).toBe('Embedding text "apple computer" stored successfully with embedding.');
+  it("should store a value with embedding and return a UUID key", async () => {
+    const key = await vdb.store("apple computer", "fruit company / hardware vendor");
+    expect(typeof key).toBe("string");
+    expect(key).toMatch(/[0-9a-fA-F-]{36}/); // UUID v4 format
   });
 
-  it("should update an existing embedding_text with new value and embedding", async () => {
-    await vdb.store("fruit", "apple");
-    const result = await vdb.store("fruit", "banana");
-    expect(result).toBe('Embedding text "fruit" stored successfully with embedding.');
-    expect(vdb.retrieve("fruit")).toBe("banana");
+  it("should update an existing embedding_text with new value and embedding, returning the same key", async () => {
+    const key1 = await vdb.store("fruit", "apple");
+    const key2 = await vdb.store("fruit", "banana");
+    expect(key2).toBe(key1);
+    expect(vdb.retrieve(key1)).toBe("banana");
   });
 
-  it("should retrieve a value for an existing embedding_text", async () => {
-    await vdb.store("test-embedding_text", "test-value");
-    expect(vdb.retrieve("test-embedding_text")).toBe("test-value");
+  it("should retrieve a value for an existing key", async () => {
+    const key = await vdb.store("test-embedding_text", "test-value");
+    expect(vdb.retrieve(key)).toBe("test-value");
   });
 
-  it("should return empty string for non-existent embedding_text on retrieve", () => {
-    expect(vdb.retrieve("nonexistent")).toBe("");
+  it("should return error for non-existent key on retrieve", () => {
+    expect(vdb.retrieve("00000000-0000-4000-8000-000000000000")).toMatch(/Error: No key matches/);
   });
 
-  it("should delete an embedding_text and return the embedding_text", async () => {
-    await vdb.store("delete-me", "goodbye");
-    const result = vdb.del("delete-me");
-    expect(result).toBe("delete-me");
-    expect(vdb.retrieve("delete-me")).toBe("");
+  it("should delete a row by key and return the key", async () => {
+    const key = await vdb.store("delete-me", "goodbye");
+    const result = vdb.del(key);
+    expect(result).toBe(key);
+    expect(vdb.retrieve(key)).toMatch(/Error: No key matches/);
   });
 
-  it("should return empty string when deleting a non-existent embedding_text", () => {
-    expect(vdb.del("ghost-embedding_text")).toBe("");
+  it("should return error when deleting a non-existent key", () => {
+    expect(vdb.del("00000000-0000-4000-8000-000000000000")).toMatch(/Error: No key matches/);
   });
 
-  it("should list all embedding_texts with default limit", async () => {
+  it("should list all rows with all fields and unique UUID keys", async () => {
+    const keys = [];
     for (let i = 0; i < 10; i++) {
-      await vdb.store(`embedding_text-${i}`, `value-${i}`);
+      keys.push(await vdb.store(`embedding_text-${i}`, `value-${i}`));
     }
-    const embedding_texts = JSON.parse(vdb.list());
-    expect(Array.isArray(embedding_texts)).toBe(true);
-    expect(embedding_texts.length).toBe(10);
+    const rows = JSON.parse(vdb.list());
+    expect(Array.isArray(rows)).toBe(true);
+    expect(rows.length).toBe(10);
+    const seen = new Set();
+    rows.forEach(row => {
+      expect(row).toHaveProperty("key");
+      expect(row).toHaveProperty("embedding_text");
+      expect(row).toHaveProperty("embedding");
+      expect(row).toHaveProperty("value");
+      expect(typeof row.key).toBe("string");
+      expect(row.key).toMatch(/[0-9a-fA-F-]{36}/);
+      expect(seen.has(row.key)).toBe(false);
+      seen.add(row.key);
+    });
+    // All keys in list should match those returned by store
+    keys.forEach(k => expect(seen.has(k)).toBe(true));
   });
 
-  it("should list embedding_texts with custom limit and offset", async () => {
+  it("should list rows with custom limit and offset, all with UUID keys", async () => {
     for (let i = 0; i < 20; i++) {
       await vdb.store(`item-${i}`, `val-${i}`);
     }
-    const embedding_texts = JSON.parse(vdb.list(5, 0));
-    expect(embedding_texts.length).toBe(5);
-    
-    const embedding_textsOffset = JSON.parse(vdb.list(5, 5));
-    expect(embedding_textsOffset.length).toBe(5);
-    expect(embedding_textsOffset[0]).not.toBe(embedding_texts[0]);
+    const rows = JSON.parse(vdb.list(5, 0));
+    expect(rows.length).toBe(5);
+    rows.forEach(row => {
+      expect(row).toHaveProperty("key");
+      expect(row.key).toMatch(/[0-9a-fA-F-]{36}/);
+    });
+    const rowsOffset = JSON.parse(vdb.list(5, 5));
+    expect(rowsOffset.length).toBe(5);
+    expect(rowsOffset[0].key).not.toBe(rows[0].key);
   });
 
-  it("should return an empty array when no embedding_texts exist", () => {
+  it("should return an empty array when no rows exist", () => {
     expect(vdb.list()).toBe("[]");
   });
 
@@ -96,13 +114,13 @@ describe("Vector DB Tool", () => {
     });
   });
 
-  it("should import a file and store its contents as key and path as value", async () => {
+  it("should import a file and store its contents as embedding_text and path as value, returning a UUID key", async () => {
     const testFile = "/tmp/vector-db-import-test.txt";
     fs.writeFileSync(testFile, "hello world import test");
-    const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
-    expect(result).toMatch(/stored successfully/);
-    // The embedding_text is the file contents, value is the path
-    expect(vdb.retrieve("hello world import test")).toBe(testFile);
+    const key = await vdb.default.execute({ action: "import_file", filepath: testFile });
+    expect(typeof key).toBe("string");
+    expect(key).toMatch(/[0-9a-fA-F-]{36}/);
+    expect(vdb.retrieve(key)).toBe(testFile);
     fs.unlinkSync(testFile);
   });
 
@@ -128,10 +146,11 @@ describe("Vector DB Tool", () => {
     const testFile = "/tmp/vector-db-large.txt";
     const largeContent = "A".repeat(20000);
     fs.writeFileSync(testFile, largeContent);
-    const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
-    expect(result).toMatch(/stored successfully/);
+    const key = await vdb.default.execute({ action: "import_file", filepath: testFile });
+    expect(typeof key).toBe("string");
+    expect(key).toMatch(/[0-9a-fA-F-]{36}/);
     // The embedding_text should be truncated to 10000 chars
-    expect(vdb.retrieve("A".repeat(10000))).toBe(testFile);
+    expect(vdb.retrieve(key)).toBe(testFile);
     fs.unlinkSync(testFile);
   });
 
@@ -177,9 +196,10 @@ describe("Vector DB Tool", () => {
     expect(async () => await vdb.search("test", 5)).not.toThrow();
   });
 
-  it("should handle store with empty key gracefully", async () => {
-    const result = await vdb.store("", "empty-key-value");
-    expect(result).toMatch(/stored successfully|Error/);
+  it("should handle store with empty embedding_text gracefully", async () => {
+    const key = await vdb.store("", "empty-key-value");
+    expect(typeof key).toBe("string");
+    expect(key).toMatch(/[0-9a-fA-F-]{36}/);
   });
 
    it("should search with default topK when not specified", async () => {
@@ -190,4 +210,69 @@ describe("Vector DB Tool", () => {
     const results = JSON.parse(await vdb.search("test"));
     expect(results.length).toBeLessThanOrEqual(5); // Default topK is 5
   });
+
+  it("should retrieve a value with a unique partial UUID", async () => {
+    const key = await vdb.store("partial-uuid-test", "partial-value");
+    const partial = key.slice(0, 8);
+    expect(vdb.retrieve(partial)).toBe("partial-value");
+  });
+
+  it("should error on retrieve with ambiguous partial UUID", async () => {
+    // Try up to 1000 times to generate two keys with the same first character
+    let key1, key2, partial, found = false;
+    for (let attempt = 0; attempt < 1000; attempt++) {
+      key1 = await vdb.store("partial-uuid-ambig-1-" + Math.random(), "v1");
+      key2 = await vdb.store("partial-uuid-ambig-2-" + Math.random(), "v2");
+      partial = key1[0];
+      if (key2[0] === partial) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      console.warn("Skipped ambiguous partial UUID test: could not generate two keys with the same prefix after 1000 attempts");
+      return;
+    }
+    const result = vdb.retrieve(partial);
+    expect(typeof result).toBe("string");
+    expect(result).toMatch(/Error: Multiple keys match/);
+  });
+
+  it("should error on retrieve with no matching partial UUID", () => {
+    expect(vdb.retrieve("deadbeef")).toMatch(/Error: No key matches/);
+  });
+
+  it("should delete a row with a unique partial UUID", async () => {
+    const key = await vdb.store("partial-uuid-del", "del-value");
+    const partial = key.slice(0, 8);
+    const result = vdb.del(partial);
+    expect(result).toBe(key);
+    expect(vdb.retrieve(key)).toMatch(/Error: No key matches/);
+  });
+
+  it("should error on delete with ambiguous partial UUID", async () => {
+    // Try up to 1000 times to generate two keys with the same first character
+    let key1, key2, partial, found = false;
+    for (let attempt = 0; attempt < 1000; attempt++) {
+      key1 = await vdb.store("partial-uuid-del-ambig-1-" + Math.random(), "v1");
+      key2 = await vdb.store("partial-uuid-del-ambig-2-" + Math.random(), "v2");
+      partial = key1[0];
+      if (key2[0] === partial) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      console.warn("Skipped ambiguous partial UUID delete test: could not generate two keys with the same prefix after 1000 attempts");
+      return;
+    }
+    const result = vdb.del(partial);
+    expect(typeof result).toBe("string");
+    expect(result).toMatch(/Error: Multiple keys match/);
+  });
+
+  it("should error on delete with no matching partial UUID", () => {
+    expect(vdb.del("cafebabe")).toMatch(/Error: No key matches/);
+  });
+
 });

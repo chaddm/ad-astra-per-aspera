@@ -6,11 +6,11 @@
 
 ## Functional Goals
 
-- Store a embedding_text, value, and embedding vector (Xenova/all-MiniLM-L6-v2, 384-dim) in SQLite.
-- On store, automatically generate the embedding vector from the key using @xenova/transformers.
-- Retrieve value by key (exact match).
-- Delete by key.
-- List all keys (optionally with pagination or limit).
+- Store a row with a UUID `key`, `embedding_text`, `value`, and embedding vector (Xenova/all-MiniLM-L6-v2, 384-dim) in SQLite.
+- On store, automatically generate the embedding vector from the `embedding_text` and assign a UUID `key`.
+- Retrieve value by UUID `key` (exact match).
+- Delete by UUID `key`.
+- List all rows (optionally with pagination or limit), returning all fields.
 - Similarity search: Given a string, embed it and return the N most similar items (configurable N, default 5), sorted by cosine similarity (lower = more similar).
 - Allow setting the database file path.
 
@@ -34,43 +34,47 @@
 - **Returns:** Confirmation message or error.
 
 ### store
-- **Description:** Store an embedding_text-value pair, automatically embedding the embedding_text.
+- **Description:** Store an embedding_text-value pair, automatically embedding the embedding_text. Returns a UUID `key` for the row.
 - **Arguments:**
-  - `embedding_text` (string, required): The text to embed and use as the primary key.
+  - `embedding_text` (string, required): The text to embed and use for storage.
   - `value` (string, required): The value to store.
-- **Returns:** Confirmation message or error.
+- **Returns:** The UUID `key` for the row.
 
 ### retrieve
-- **Description:** Retrieve the value for a given embedding_text (exact match).
+- **Description:** Retrieve the value for a given row by UUID `key` (exact match).
 - **Arguments:**
-  - `embedding_text` (string, required): The text to retrieve.
+  - `key` (string, required): The UUID key to retrieve.
 - **Returns:** The value or a not-found message.
 
 ### delete
-- **Description:** Delete an embedding_text-value pair by embedding_text.
+- **Description:** Delete a row by UUID `key`.
 - **Arguments:**
-  - `embedding_text` (string, required): The text to delete.
-- **Returns:** Confirmation message or warning if not found.
+  - `key` (string, required): The UUID key to delete.
+- **Returns:** The deleted key or warning if not found.
 
 ### list
-- **Description:** List all embedding_texts (optionally paginated).
+- **Description:** List all rows (optionally paginated).
 - **Arguments:**
-  - `limit` (number, optional): Max number of embedding_texts to return (default: 50).
+  - `limit` (number, optional): Max number of rows to return (default: 50).
   - `offset` (number, optional): Offset for pagination (default: 0).
-- **Returns:** Array of embedding_texts.
+- **Returns:** Array of objects: `{ key, embedding_text, value, embedding }`.
 
 ### search
-- **Description:** Similarity search for the most similar embedding_texts/values to a query string.
+- **Description:** Similarity search for the most similar rows to a query string.
 - **Arguments:**
   - `query` (string, required): The search string to embed and compare.
   - `topK` (number, optional): Number of results to return (default: 5).
-- **Returns:** Array of objects: `{ embedding_text, value, score }` sorted by similarity (lower score = more similar).
+- **Returns:** Array of objects: `{ key, embedding_text, value, score }` sorted by similarity (lower score = more similar).
 
 ### set_database
 - **Description:** Set the database file path.
 - **Arguments:**
   - `filename` (string, required): Path to the SQLite database file.
 - **Returns:** Confirmation message.
+
+## Migration Note
+
+- On upgrade, all existing rows are assigned a UUID `key` if missing.
 
 ## SQLite Engine and Extension Loading
 
@@ -83,7 +87,8 @@
 
 ```
 CREATE TABLE IF NOT EXISTS vector_store (
-  embedding_text TEXT PRIMARY KEY,
+  key TEXT PRIMARY KEY, -- UUID
+  embedding_text TEXT UNIQUE,
   value TEXT,
   embedding VECTOR(384)
 );
@@ -142,7 +147,7 @@ const rows = db.query(
 
 ## Output Format
 - All outputs must be human-readable and consistent with opencode tool standards.
-- For `list` and `search`, return JSON arrays. For `search`, each result object has `embedding_text`, `value`, and `score`.
+- For `list` and `search`, return JSON arrays. For `list`, each result object has `key`, `embedding_text`, `value`, and `embedding`. For `search`, each result object has `key`, `embedding_text`, `value`, and `score`.
 
 ## Usage Examples
 
@@ -162,30 +167,59 @@ const rows = db.query(
   "value": "fruit company / hardware vendor"
 }
 ```
+**Returns:**
+```
+"a1b2c3d4-...-e5f6"
+```
+(UUID key for the row)
+
 
 ### Retrieve a value
 ```
 {
   "action": "retrieve",
-  "embedding_text": "apple computer"
+  "key": "a1b2c3d4-...-e5f6"
 }
 ```
+**Returns:**
+```
+"fruit company / hardware vendor"
+```
 
-### Delete an embedding_text
+
+### Delete a row
 ```
 {
   "action": "delete",
-  "embedding_text": "apple computer"
+  "key": "a1b2c3d4-...-e5f6"
 }
 ```
+**Returns:**
+```
+"a1b2c3d4-...-e5f6"
+```
 
-### List embedding_texts
+
+### List rows
 ```
 {
   "action": "list",
   "limit": 10
 }
 ```
+**Returns:**
+```
+[
+  {
+    "key": "a1b2c3d4-...-e5f6",
+    "embedding_text": "apple computer",
+    "value": "fruit company / hardware vendor",
+    "embedding": [ ... ]
+  },
+  ...
+]
+```
+
 
 ### Similarity search
 ```
@@ -195,6 +229,19 @@ const rows = db.query(
   "topK": 5
 }
 ```
+**Returns:**
+```
+[
+  {
+    "key": "a1b2c3d4-...-e5f6",
+    "embedding_text": "apple computer",
+    "value": "fruit company / hardware vendor",
+    "score": 0.1234
+  },
+  ...
+]
+```
+
 
 ### Set database path
 ```

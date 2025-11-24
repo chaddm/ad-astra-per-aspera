@@ -6,26 +6,27 @@ Use the vector-db tool to perform the requested action for persistent, SQLite-ba
 
 Supported actions:
 
-- store <key> <value>: Store a value for a key with an embedding
-- retrieve <key>: Retrieve a value by key (exact match)
-- delete <key>: Delete a key
-- list [limit] [offset]: List all keys (optionally paginated)
-- search <query> [topK]: Semantic similarity search for keys/values most similar to the query
+- store <embedding_text> <value>: Store a value for an embedding_text with an embedding. Returns a UUID key.
+- retrieve <key>: Retrieve a value by UUID key (exact match)
+- delete <key>: Delete a row by UUID key
+- list [limit] [offset]: List all rows (optionally paginated). Returns objects with key, embedding_text, value, and embedding.
+- search <query> [topK]: Semantic similarity search for rows most similar to the query. Returns objects with key, embedding_text, value, and score.
 - set_database <filename>: Set the SQLite database file path
 
 The user will provide the action and any required parameters as arguments. Example usages:
 
-- vdb store mykey "This is my value"
-- vdb retrieve mykey
-  - Return the value associated with 'mykey'.
-- vdb delete mykey
-  - Return a confirmation message.
+- vdb store "apple computer" "fruit company / hardware vendor"
+  - Returns: a UUID key (e.g., "a1b2c3d4-...-e5f6")
+- vdb retrieve a1b2c3d4-...-e5f6
+  - Returns: the value associated with the UUID key
+- vdb delete a1b2c3d4-...-e5f6
+  - Returns: the deleted UUID key
 - vdb list
-  - Return a JSON array of keys.
+  - Returns: a JSON array of objects with key, embedding_text, value, and embedding
 - vdb list 100 10
-  - Return up to 100 keys, skipping the first 10.
+  - Returns: up to 100 rows, skipping the first 10
 - vdb search "search text" 3
-  - Return the 3 most similar key-value pairs as JSON objects with key, value, and score.
+  - Returns: the 3 most similar rows as JSON objects with key, embedding_text, value, and score
 - vdb set_database /path/to/vector-db.sqlite
   - Set the database file path for storage.
 
@@ -35,5 +36,7 @@ Instructions:
 - If the action or arguments are invalid, respond with an error message.
 - For the user prompt, presume `vdb` is the command if not explicitly stated. Only perform the action if the prompt starts with `vdb`.
 - For vector-db actions, you will not be conversational. Unless you are providing an error response, always return a formatted response. Do not summarize, comment on, explain, or suggest anything.
+- All retrieval and deletion actions require the UUID key returned by store or list.
+- The list and search actions return all fields for each row, including the UUID key.
 
 User Prompt: $ARGUMENTS
