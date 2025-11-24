@@ -76,7 +76,42 @@ function getDb(): Database {
  * @param value - The value to store
  * @returns Confirmation message or error
  */
+/**
+ * Import a file by reading its contents and storing a vector.
+ * The key will be the file contents, and the value will be the file path.
+ * @param filepath - The path to the file to import
+ * @returns Confirmation message or error
+ */
+export async function import_file(filepath?: string): Promise<string> {
+  const fs = require('fs');
+  if (!filepath || typeof filepath !== "string" || filepath.trim() === "") {
+    return "Error: Filepath is required for import_file action.";
+  }
+  try {
+    if (!fs.existsSync(filepath)) {
+      return `Error: File not found at path: ${filepath}`;
+    }
+    const stat = fs.statSync(filepath);
+    if (!stat.isFile()) {
+      return `Error: Path is not a file: ${filepath}`;
+    }
+    let contents = fs.readFileSync(filepath, "utf8");
+    if (typeof contents !== "string" || contents.length === 0) {
+      return `Error: File is empty or could not be read: ${filepath}`;
+    }
+    // Optionally, truncate very large files for embedding
+    const MAX_LENGTH = 10000;
+    if (contents.length > MAX_LENGTH) {
+      contents = contents.slice(0, MAX_LENGTH);
+    }
+    return await store(contents, filepath);
+  } catch (e) {
+    return `Error importing file: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
 export async function store(key: string, value: string): Promise<string> {
+
   try {
     const db = getDb();
     
@@ -197,9 +232,10 @@ export async function search(query: string, topK: number = 5): Promise<string> {
 export default tool({
   description: "A persistent, SQLite-backed vector store for RAG and semantic search. Stores key-value pairs with embeddings (384-dim using Xenova/all-MiniLM-L6-v2) and supports similarity search using sqlite-vec extension.",
   args: {
-    action: z.enum(["store", "retrieve", "delete", "list", "search", "set_database"]).describe("Action to perform: store, retrieve, delete, list, search, or set_database"),
+    action: z.enum(["store", "retrieve", "delete", "list", "search", "set_database", "import_file"]).describe("Action to perform: store, retrieve, delete, list, search, set_database, or import_file"),
     key: z.string().optional().describe("The key to store, retrieve, or delete"),
     value: z.string().optional().describe("The value to store with the key"),
+    filepath: z.string().optional().describe("Path to the file to import as a vector (for import_file action)"),
     query: z.string().optional().describe("Search query string for similarity search"),
     topK: z.number().optional().describe("Number of results to return for search (default: 5)"),
     limit: z.number().optional().describe("Maximum number of keys to return for list (default: 50)"),
@@ -267,8 +303,11 @@ export default tool({
         return `Database path set to: ${resolvedPath}`;
       }
       
+      case "import_file": {
+        return await import_file(args.filepath);
+      }
       default:
-        return "Error: Unknown action. Use store, retrieve, delete, list, search, or set_database.";
+        return "Error: Unknown action. Use store, retrieve, delete, list, search, set_database, or import_file.";
     }
   },
 });

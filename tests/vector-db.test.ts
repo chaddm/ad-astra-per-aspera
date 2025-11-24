@@ -4,20 +4,15 @@ import fs from "fs";
 
 const TEST_DB_PATH = `${process.env.HOME || "."}/.config/opencode/vector-db-test.sqlite`;
 
-/**
- * Reset the test database by removing it.
- */
 function resetDb() {
   try {
     fs.unlinkSync(TEST_DB_PATH);
   } catch {}
 }
 
-// Set the database to the test DB before all tests
-vdb.setDatabasePath(TEST_DB_PATH);
-
 describe("Vector DB Tool", () => {
   beforeEach(() => {
+    vdb.setDatabasePath(TEST_DB_PATH);
     resetDb();
   });
 
@@ -93,13 +88,53 @@ describe("Vector DB Tool", () => {
     expect(results.length).toBeLessThanOrEqual(3);
     
     // Each result should have key, value, and score
-    results.forEach((result: any) => {
+     results.forEach((result: any) => {
       expect(result).toHaveProperty("key");
       expect(result).toHaveProperty("value");
       expect(result).toHaveProperty("score");
       expect(typeof result.score).toBe("number");
     });
   });
+
+  it("should import a file and store its contents as key and path as value", async () => {
+    const testFile = "/tmp/vector-db-import-test.txt";
+    fs.writeFileSync(testFile, "hello world import test");
+    const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
+    expect(result).toMatch(/stored successfully/);
+    // The key is the file contents, value is the path
+    expect(vdb.retrieve("hello world import test")).toBe(testFile);
+    fs.unlinkSync(testFile);
+  });
+
+  it("should return error for missing file in import_file", async () => {
+    const result = await vdb.default.execute({ action: "import_file", filepath: "/tmp/nonexistent-file.txt" });
+    expect(result).toMatch(/Error: File not found/);
+  });
+
+  it("should return error for empty file in import_file", async () => {
+    const testFile = "/tmp/vector-db-empty.txt";
+    fs.writeFileSync(testFile, "");
+    const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
+    expect(result).toMatch(/Error: File is empty/);
+    fs.unlinkSync(testFile);
+  });
+
+  it("should return error for directory in import_file", async () => {
+    const result = await vdb.default.execute({ action: "import_file", filepath: "/tmp/" });
+    expect(result).toMatch(/Error: Path is not a file/);
+  });
+
+  it("should truncate and store large files in import_file", async () => {
+    const testFile = "/tmp/vector-db-large.txt";
+    const largeContent = "A".repeat(20000);
+    fs.writeFileSync(testFile, largeContent);
+    const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
+    expect(result).toMatch(/stored successfully/);
+    // The key should be truncated to 10000 chars
+    expect(vdb.retrieve("A".repeat(10000))).toBe(testFile);
+    fs.unlinkSync(testFile);
+  });
+
 
   it("should return results sorted by similarity (ascending score)", async () => {
     await vdb.store("apple computer", "technology company");
@@ -147,7 +182,7 @@ describe("Vector DB Tool", () => {
     expect(result).toMatch(/stored successfully|Error/);
   });
 
-  it("should search with default topK when not specified", async () => {
+   it("should search with default topK when not specified", async () => {
     for (let i = 0; i < 10; i++) {
       await vdb.store(`test-${i}`, `content-${i}`);
     }

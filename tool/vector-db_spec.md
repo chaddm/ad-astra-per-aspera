@@ -27,6 +27,12 @@
 
 ## Actions and Arguments
 
+### import_file
+- **Description:** Import a file by reading its contents and storing a vector. The key will be the file contents, and the value will be the file path.
+- **Arguments:**
+  - `filepath` (string, required): The path to the file to import.
+- **Returns:** Confirmation message or error.
+
 ### store
 - **Description:** Store a key-value pair, automatically embedding the key.
 - **Arguments:**
@@ -140,6 +146,14 @@ const rows = db.query(
 
 ## Usage Examples
 
+### Import a file
+```
+{
+  "action": "import_file",
+  "filepath": "/path/to/file.txt"
+}
+```
+
 ### Store a key-value pair
 ```
 {
@@ -191,7 +205,7 @@ const rows = db.query(
 ```
 
 ## Testing Requirements
-- Unit and integration tests for all actions, including edge cases and error handling.
+- Unit and integration tests for all actions, including edge cases and error handling. This includes tests for `import_file` (valid file, missing file, empty file, binary file, etc.).
 - Test with valid and invalid inputs.
 - Test database initialization, switching, and extension loading.
 

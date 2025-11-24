@@ -12,7 +12,7 @@ project.
   - Infer types where possible.
   - Create any required if they do not exist, including interfaces and type aliases.
   - When adding new NPM packages, determine if TypeScript definitions are available
-    and add them.  If not available, infer types as accurately as possible.
+    and add them. If not available, infer types as accurately as possible.
 - Determine documentation changes required alongside code changes.
   - Consider if any existing documentation needs to be updated, including the
     `AGENTS.md` file and/or any relevant supporting documentation for the code.
@@ -24,8 +24,8 @@ project.
 
 - Use guard clauses to reduce nesting and improve readability.
 - Use early returns for invalid or edge-case inputs.
-- Prefer single-line guard clauses when possible.
-  Instead of:
+- Prefer single-line guard clauses when possible. Instead of:
+
   ```typescript
   function example(value: number | null): number {
     if (value !== null) {
@@ -36,7 +36,9 @@ project.
     }
   }
   ```
+
   Use:
+
   ```typescript
   function example(value: number | null): number {
     if (value === null) return 0;
@@ -57,14 +59,20 @@ code.
 
 - When chaining multiple methods, use multi-line formatting to enhance readability.
   Instead of:
-  ```typescript
-  const result = data.filter(item => item.active).map(item => item.value).reduce((a, b) => a + b, 0);
-  ```
-  Use:
+
   ```typescript
   const result = data
-    .filter(item => item.active)
-    .map(item => item.value)
+    .filter((item) => item.active)
+    .map((item) => item.value)
+    .reduce((a, b) => a + b, 0);
+  ```
+
+  Use:
+
+  ```typescript
+  const result = data
+    .filter((item) => item.active)
+    .map((item) => item.value)
     .reduce((a, b) => a + b, 0);
   ```
 
@@ -75,21 +83,15 @@ code.
   ```
   Use:
   ```typescript
-  someFunction(
-    param1,
-    param2,
-    param3,
-    param4,
-    param5
-  );
+  someFunction(param1, param2, param3, param4, param5);
   ```
 
 **Prefer pure functions**
 
 Aim to write pure functions that do not cause side effects for better testability and
-maintainability.  Place these functions at the top of the file to improve
-readability and allow the code to be compiled once.
+maintainability. Place these functions at the top of the file to improve readability
+and allow the code to be compiled once.
 
 - Consider exactly similar inputs producing exactly similar outputs without side
-  effects to be a pure function.  Provide a description, long name for WHAT the
+  effects to be a pure function. Provide a description, long name for WHAT the
   function does.
