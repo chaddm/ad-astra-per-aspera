@@ -6,7 +6,7 @@
 
 ## Functional Goals
 
-- Store a key, value, and embedding vector (Xenova/all-MiniLM-L6-v2, 384-dim) in SQLite.
+- Store a embedding_text, value, and embedding vector (Xenova/all-MiniLM-L6-v2, 384-dim) in SQLite.
 - On store, automatically generate the embedding vector from the key using @xenova/transformers.
 - Retrieve value by key (exact match).
 - Delete by key.
@@ -34,37 +34,37 @@
 - **Returns:** Confirmation message or error.
 
 ### store
-- **Description:** Store a key-value pair, automatically embedding the key.
+- **Description:** Store an embedding_text-value pair, automatically embedding the embedding_text.
 - **Arguments:**
-  - `key` (string, required): The key to store.
+  - `embedding_text` (string, required): The text to embed and use as the primary key.
   - `value` (string, required): The value to store.
 - **Returns:** Confirmation message or error.
 
 ### retrieve
-- **Description:** Retrieve the value for a given key (exact match).
+- **Description:** Retrieve the value for a given embedding_text (exact match).
 - **Arguments:**
-  - `key` (string, required): The key to retrieve.
+  - `embedding_text` (string, required): The text to retrieve.
 - **Returns:** The value or a not-found message.
 
 ### delete
-- **Description:** Delete a key-value pair by key.
+- **Description:** Delete an embedding_text-value pair by embedding_text.
 - **Arguments:**
-  - `key` (string, required): The key to delete.
+  - `embedding_text` (string, required): The text to delete.
 - **Returns:** Confirmation message or warning if not found.
 
 ### list
-- **Description:** List all keys (optionally paginated).
+- **Description:** List all embedding_texts (optionally paginated).
 - **Arguments:**
-  - `limit` (number, optional): Max number of keys to return (default: 50).
+  - `limit` (number, optional): Max number of embedding_texts to return (default: 50).
   - `offset` (number, optional): Offset for pagination (default: 0).
-- **Returns:** Array of keys.
+- **Returns:** Array of embedding_texts.
 
 ### search
-- **Description:** Similarity search for the most similar keys/values to a query string.
+- **Description:** Similarity search for the most similar embedding_texts/values to a query string.
 - **Arguments:**
   - `query` (string, required): The search string to embed and compare.
   - `topK` (number, optional): Number of results to return (default: 5).
-- **Returns:** Array of objects: `{ key, value, score }` sorted by similarity (lower score = more similar).
+- **Returns:** Array of objects: `{ embedding_text, value, score }` sorted by similarity (lower score = more similar).
 
 ### set_database
 - **Description:** Set the database file path.
@@ -83,7 +83,7 @@
 
 ```
 CREATE TABLE IF NOT EXISTS vector_store (
-  key TEXT PRIMARY KEY,
+  embedding_text TEXT PRIMARY KEY,
   value TEXT,
   embedding VECTOR(384)
 );
@@ -103,16 +103,16 @@ Generate an embedding for a key and insert it with its value:
 
 ```typescript
 // Generate embedding
-const embedding = await generateEmbedding(key);
+const embedding = await generateEmbedding(embedding_text);
 const embeddingArray = Array.from(embedding);
 const embeddingJson = JSON.stringify(embeddingArray);
 
 // Insert into database
 db.query(
-  `INSERT INTO vector_store (key, value, embedding) 
+  `INSERT INTO vector_store (embedding_text, value, embedding) 
    VALUES (?1, ?2, vec_f32(?3))
-   ON CONFLICT(key) DO UPDATE SET value=excluded.value, embedding=excluded.embedding`
-).run(key, value, embeddingJson);
+   ON CONFLICT(embedding_text) DO UPDATE SET value=excluded.value, embedding=excluded.embedding`
+).run(embedding_text, value, embeddingJson);
 ```
 
 ### Similarity Search
@@ -126,7 +126,7 @@ const embeddingJson = JSON.stringify(Array.from(queryEmbedding));
 // Perform similarity search
 const rows = db.query(
   `SELECT
-    key,
+    embedding_text,
     value,
     vec_distance_cosine(embedding, vec_f32(?1)) AS score
   FROM vector_store
@@ -142,7 +142,7 @@ const rows = db.query(
 
 ## Output Format
 - All outputs must be human-readable and consistent with opencode tool standards.
-- For `list` and `search`, return JSON arrays.
+- For `list` and `search`, return JSON arrays. For `search`, each result object has `embedding_text`, `value`, and `score`.
 
 ## Usage Examples
 
@@ -154,11 +154,11 @@ const rows = db.query(
 }
 ```
 
-### Store a key-value pair
+### Store an embedding_text-value pair
 ```
 {
   "action": "store",
-  "key": "apple computer",
+  "embedding_text": "apple computer",
   "value": "fruit company / hardware vendor"
 }
 ```
@@ -167,19 +167,19 @@ const rows = db.query(
 ```
 {
   "action": "retrieve",
-  "key": "apple computer"
+  "embedding_text": "apple computer"
 }
 ```
 
-### Delete a key
+### Delete an embedding_text
 ```
 {
   "action": "delete",
-  "key": "apple computer"
+  "embedding_text": "apple computer"
 }
 ```
 
-### List keys
+### List embedding_texts
 ```
 {
   "action": "list",
@@ -212,7 +212,7 @@ const rows = db.query(
 ## Limitations
 - Requires sqlite-vec extension to be available in `./lib/vec0.dylib`.
 - Requires @xenova/transformers package to be installed.
-- Only supports text keys and values.
+- Only supports text embedding_texts and values.
 - Embedding dimension is fixed at 384 (Xenova/all-MiniLM-L6-v2).
 - First run will download the model (~90MB) to local cache (`~/.cache/huggingface`).
 - Subsequent runs are fully offline.

@@ -18,58 +18,58 @@ describe("Vector DB Tool", () => {
 
   it("should store a value with embedding and return a success message", async () => {
     const result = await vdb.store("apple computer", "fruit company / hardware vendor");
-    expect(result).toBe('Key "apple computer" stored successfully with embedding.');
+    expect(result).toBe('Embedding text "apple computer" stored successfully with embedding.');
   });
 
-  it("should update an existing key with new value and embedding", async () => {
+  it("should update an existing embedding_text with new value and embedding", async () => {
     await vdb.store("fruit", "apple");
     const result = await vdb.store("fruit", "banana");
-    expect(result).toBe('Key "fruit" stored successfully with embedding.');
+    expect(result).toBe('Embedding text "fruit" stored successfully with embedding.');
     expect(vdb.retrieve("fruit")).toBe("banana");
   });
 
-  it("should retrieve a value for an existing key", async () => {
-    await vdb.store("test-key", "test-value");
-    expect(vdb.retrieve("test-key")).toBe("test-value");
+  it("should retrieve a value for an existing embedding_text", async () => {
+    await vdb.store("test-embedding_text", "test-value");
+    expect(vdb.retrieve("test-embedding_text")).toBe("test-value");
   });
 
-  it("should return empty string for non-existent key on retrieve", () => {
+  it("should return empty string for non-existent embedding_text on retrieve", () => {
     expect(vdb.retrieve("nonexistent")).toBe("");
   });
 
-  it("should delete a key and return the key", async () => {
+  it("should delete an embedding_text and return the embedding_text", async () => {
     await vdb.store("delete-me", "goodbye");
     const result = vdb.del("delete-me");
     expect(result).toBe("delete-me");
     expect(vdb.retrieve("delete-me")).toBe("");
   });
 
-  it("should return empty string when deleting a non-existent key", () => {
-    expect(vdb.del("ghost-key")).toBe("");
+  it("should return empty string when deleting a non-existent embedding_text", () => {
+    expect(vdb.del("ghost-embedding_text")).toBe("");
   });
 
-  it("should list all keys with default limit", async () => {
+  it("should list all embedding_texts with default limit", async () => {
     for (let i = 0; i < 10; i++) {
-      await vdb.store(`key-${i}`, `value-${i}`);
+      await vdb.store(`embedding_text-${i}`, `value-${i}`);
     }
-    const keys = JSON.parse(vdb.list());
-    expect(Array.isArray(keys)).toBe(true);
-    expect(keys.length).toBe(10);
+    const embedding_texts = JSON.parse(vdb.list());
+    expect(Array.isArray(embedding_texts)).toBe(true);
+    expect(embedding_texts.length).toBe(10);
   });
 
-  it("should list keys with custom limit and offset", async () => {
+  it("should list embedding_texts with custom limit and offset", async () => {
     for (let i = 0; i < 20; i++) {
       await vdb.store(`item-${i}`, `val-${i}`);
     }
-    const keys = JSON.parse(vdb.list(5, 0));
-    expect(keys.length).toBe(5);
+    const embedding_texts = JSON.parse(vdb.list(5, 0));
+    expect(embedding_texts.length).toBe(5);
     
-    const keysOffset = JSON.parse(vdb.list(5, 5));
-    expect(keysOffset.length).toBe(5);
-    expect(keysOffset[0]).not.toBe(keys[0]);
+    const embedding_textsOffset = JSON.parse(vdb.list(5, 5));
+    expect(embedding_textsOffset.length).toBe(5);
+    expect(embedding_textsOffset[0]).not.toBe(embedding_texts[0]);
   });
 
-  it("should return an empty array when no keys exist", () => {
+  it("should return an empty array when no embedding_texts exist", () => {
     expect(vdb.list()).toBe("[]");
   });
 
@@ -87,9 +87,9 @@ describe("Vector DB Tool", () => {
     expect(results.length).toBeGreaterThan(0);
     expect(results.length).toBeLessThanOrEqual(3);
     
-    // Each result should have key, value, and score
+    // Each result should have embedding_text, value, and score
      results.forEach((result: any) => {
-      expect(result).toHaveProperty("key");
+      expect(result).toHaveProperty("embedding_text");
       expect(result).toHaveProperty("value");
       expect(result).toHaveProperty("score");
       expect(typeof result.score).toBe("number");
@@ -101,7 +101,7 @@ describe("Vector DB Tool", () => {
     fs.writeFileSync(testFile, "hello world import test");
     const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
     expect(result).toMatch(/stored successfully/);
-    // The key is the file contents, value is the path
+    // The embedding_text is the file contents, value is the path
     expect(vdb.retrieve("hello world import test")).toBe(testFile);
     fs.unlinkSync(testFile);
   });
@@ -130,7 +130,7 @@ describe("Vector DB Tool", () => {
     fs.writeFileSync(testFile, largeContent);
     const result = await vdb.default.execute({ action: "import_file", filepath: testFile });
     expect(result).toMatch(/stored successfully/);
-    // The key should be truncated to 10000 chars
+    // The embedding_text should be truncated to 10000 chars
     expect(vdb.retrieve("A".repeat(10000))).toBe(testFile);
     fs.unlinkSync(testFile);
   });

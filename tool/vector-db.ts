@@ -62,7 +62,7 @@ function getDb(): Database {
   
   // Create the vector_store table if it doesn't exist
   db.run(`CREATE TABLE IF NOT EXISTS vector_store (
-    key TEXT PRIMARY KEY,
+    embedding_text TEXT PRIMARY KEY,
     value TEXT,
     embedding VECTOR(${EMBEDDING_DIMENSION})
   )`);
@@ -110,24 +110,24 @@ export async function import_file(filepath?: string): Promise<string> {
   }
 }
 
-export async function store(key: string, value: string): Promise<string> {
+export async function store(embedding_text: string, value: string): Promise<string> {
 
   try {
     const db = getDb();
     
-    // Generate embedding for the key
-    const embedding = await generateEmbedding(key);
+// Generate embedding for the embedding_text
+    const embedding = await generateEmbedding(embedding_text);
     const embeddingArray = Array.from(embedding);
     const embeddingJson = JSON.stringify(embeddingArray);
     
     // Convert to vec_f32 format for sqlite-vec
     db.query(
-      `INSERT INTO vector_store (key, value, embedding) 
+      `INSERT INTO vector_store (embedding_text, value, embedding) 
        VALUES (?1, ?2, vec_f32(?3))
-       ON CONFLICT(key) DO UPDATE SET value=excluded.value, embedding=excluded.embedding`
-    ).run(key, value, embeddingJson);
+       ON CONFLICT(embedding_text) DO UPDATE SET value=excluded.value, embedding=excluded.embedding`
+    ).run(embedding_text, value, embeddingJson);
     
-    return `Key "${key}" stored successfully with embedding.`;
+    return `Embedding text "${embedding_text}" stored successfully with embedding.`;
   } catch (e) {
     return `Error storing key: ${e instanceof Error ? e.message : String(e)}`;
   }
@@ -138,10 +138,10 @@ export async function store(key: string, value: string): Promise<string> {
  * @param key - The key to retrieve
  * @returns The value or empty string if not found
  */
-export function retrieve(key: string): string {
+export function retrieve(embedding_text: string): string {
   try {
     const db = getDb();
-    const row = db.query(`SELECT value FROM vector_store WHERE key = ?1`).get(key);
+    const row = db.query(`SELECT value FROM vector_store WHERE embedding_text = ?1`).get(embedding_text);
     
     if (!row || typeof row !== 'object' || row === null) return "";
     
@@ -159,16 +159,16 @@ export function retrieve(key: string): string {
  * @param key - The key to delete
  * @returns The deleted key or empty string if not found
  */
-export function del(key: string): string {
+export function del(embedding_text: string): string {
   try {
     const db = getDb();
-    const row = db.query(`SELECT key FROM vector_store WHERE key = ?1`).get(key);
+    const row = db.query(`SELECT embedding_text FROM vector_store WHERE embedding_text = ?1`).get(embedding_text);
     
     if (!row || typeof row !== 'object' || row === null) return "";
     
-    db.query(`DELETE FROM vector_store WHERE key = ?1`).run(key);
+    db.query(`DELETE FROM vector_store WHERE embedding_text = ?1`).run(embedding_text);
     
-    return key;
+    return embedding_text;
   } catch (e) {
     return "";
   }
@@ -184,12 +184,12 @@ export function list(limit: number = 50, offset: number = 0): string {
   try {
     const db = getDb();
     const rows = db.query(
-      `SELECT key FROM vector_store LIMIT ?1 OFFSET ?2`
+      `SELECT embedding_text FROM vector_store LIMIT ?1 OFFSET ?2`
     ).all(limit, offset);
     
     if (!rows.length) return "[]";
     
-    return JSON.stringify(rows.map((r: any) => r.key));
+    return JSON.stringify(rows.map((r: any) => r.embedding_text));
   } catch (e) {
     return "[]";
   }
@@ -213,7 +213,7 @@ export async function search(query: string, topK: number = 5): Promise<string> {
     // Perform similarity search using cosine distance
     const rows = db.query(
       `SELECT
-        key,
+         embedding_text,
         value,
         vec_distance_cosine(embedding, vec_f32(?1)) AS score
       FROM vector_store
@@ -223,7 +223,12 @@ export async function search(query: string, topK: number = 5): Promise<string> {
     
     if (!rows.length) return "[]";
     
-    return JSON.stringify(rows);
+    // Remap key to embedding_text in result objects for compatibility with tests
+return JSON.stringify(rows.map((row: any) => ({
+  embedding_text: row.embedding_text,
+  value: row.value,
+  score: row.score
+})));
   } catch (e) {
     return `Error during search: ${e instanceof Error ? e.message : String(e)}`;
   }
@@ -231,38 +236,38 @@ export async function search(query: string, topK: number = 5): Promise<string> {
 
 export default tool({
   description: "A persistent, SQLite-backed vector store for RAG and semantic search. Stores key-value pairs with embeddings (384-dim using Xenova/all-MiniLM-L6-v2) and supports similarity search using sqlite-vec extension.",
-  args: {
+   args: {
     action: z.enum(["store", "retrieve", "delete", "list", "search", "set_database", "import_file"]).describe("Action to perform: store, retrieve, delete, list, search, set_database, or import_file"),
-    key: z.string().optional().describe("The key to store, retrieve, or delete"),
-    value: z.string().optional().describe("The value to store with the key"),
+    embedding_text: z.string().optional().describe("The text to embed and use as the primary key for storage, retrieval, or deletion"),
+    value: z.string().optional().describe("The value to store with the embedding_text"),
     filepath: z.string().optional().describe("Path to the file to import as a vector (for import_file action)"),
     query: z.string().optional().describe("Search query string for similarity search"),
     topK: z.number().optional().describe("Number of results to return for search (default: 5)"),
-    limit: z.number().optional().describe("Maximum number of keys to return for list (default: 50)"),
+    limit: z.number().optional().describe("Maximum number of embedding_texts to return for list (default: 50)"),
     offset: z.number().optional().describe("Offset for pagination in list (default: 0)"),
     filename: z.string().optional().describe("Path to the SQLite database file"),
   },
   async execute(args, context) {
-    const { action, key, value, query, topK, limit, offset, filename } = args;
+    const { action, embedding_text, value, query, topK, limit, offset, filename } = args;
     
     switch (action) {
       case "store":
-        if (!key || typeof value !== "string") {
-          return "Error: Both key and value are required for store action.";
+        if (!embedding_text || typeof value !== "string") {
+          return "Error: Both embedding_text and value are required for store action.";
         }
-        return await store(key, value);
+        return await store(embedding_text, value);
         
       case "retrieve":
-        if (!key) {
-          return "Error: Key is required for retrieve action.";
+        if (!embedding_text) {
+          return "Error: embedding_text is required for retrieve action.";
         }
-        return retrieve(key);
+        return retrieve(embedding_text);
         
       case "delete":
-        if (!key) {
-          return "Error: Key is required for delete action.";
+        if (!embedding_text) {
+          return "Error: embedding_text is required for delete action.";
         }
-        return del(key);
+        return del(embedding_text);
         
       case "list":
         return list(limit, offset);
