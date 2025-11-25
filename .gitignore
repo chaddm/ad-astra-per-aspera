@@ -151,3 +151,6 @@ Icon?
 # Misc
 tmp/
 temp/
+
+# SQLite database files
+*.sqlite

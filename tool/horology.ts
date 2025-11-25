@@ -12,7 +12,15 @@ const getOrdinalSuffix = (day: number): string => {
   }
 }
 
+export const is_leap_year = (): boolean => {
+  const year = new Date().getFullYear();
+  if (year % 4 !== 0) return false;
+  if (year % 100 !== 0) return true;
+  return year % 400 === 0;
+}
+
 export const get_current_date_and_time = (): string => {
+
   const now = new Date()
 
   // Days of the week

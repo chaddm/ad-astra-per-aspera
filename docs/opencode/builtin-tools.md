@@ -57,6 +57,10 @@ functions.horology
 - Purpose: Get current date/time as formatted string.
 - Key params: none
 
+functions.is_leap_year
+- Purpose: Returns true if the current year is a leap year, false otherwise.
+- Key params: none
+
 functions.horology_formatCurrentDateTime
 - Purpose: Get current date/time in a formatted string.
 - Key params: none

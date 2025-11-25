@@ -1,16 +1,19 @@
 # Horology Tool Specification
 
 ## Overview
-The Horology tool provides a utility to retrieve the current date and time in a human-readable, formatted string. It is designed to be used as a plugin/tool in the OpenCode ecosystem, but the requirements are language-agnostic and can be implemented in any environment.
+The Horology tool provides utilities to retrieve the current date and time in a human-readable, formatted string, and to determine if the current year is a leap year. It is designed to be used as a plugin/tool in the OpenCode ecosystem, but the requirements are language-agnostic and can be implemented in any environment.
 
 ## Purpose
-To supply users with the current date and time, including day of the week, day of the month (with ordinal suffix), month, year, time (in 12-hour format with AM/PM), hundredths of a second, and timezone information, all in a single, well-formatted string.
+To supply users with:
+- The current date and time, including day of the week, day of the month (with ordinal suffix), month, year, time (in 12-hour format with AM/PM), hundredths of a second, and timezone information, all in a single, well-formatted string.
+- A boolean indicating whether the current year is a leap year.
 
 ## Requirements
 
 ### Functional Requirements
 1. **Current Date and Time**: The tool must return the current local date and time at the moment of invocation.
-2. **Formatted Output**: The output must be a single string, formatted as follows:
+2. **Leap Year Check**: The tool must provide a function that returns true if the current year is a leap year, false otherwise.
+3. **Formatted Output**: The date/time output must be a single string, formatted as follows:
    - Day of the week (e.g., "Monday")
    - The day of the month with the correct ordinal suffix (e.g., "13th")
    - The month name (e.g., "November")
@@ -19,8 +22,8 @@ To supply users with the current date and time, including day of the week, day o
    - Hundredths of a second (e.g., ".05")
    - The timezone offset from UTC (e.g., "UTC-06:00")
    - If available, the IANA timezone abbreviation (e.g., "CST") should be included in parentheses after the UTC offset
-3. **No Arguments**: The tool must not require any input arguments.
-4. **Error Handling**: If the date and time cannot be retrieved, the tool must return a clear error message.
+4. **No Arguments**: Neither function requires input arguments.
+5. **Error Handling**: If the date and time cannot be retrieved, the tool must return a clear error message.
 
 ### Non-Functional Requirements
 1. **Language Independence**: The specification must be implementable in any programming language.
@@ -36,11 +39,18 @@ To supply users with the current date and time, including day of the week, day o
 - [ ] The tool does not require any input arguments.
 - [ ] If an error occurs, a clear error message is returned.
 - [ ] The output is a single, human-readable string.
+- [ ] The leap year function returns true for leap years and false for non-leap years, using the current year.
 
 ## Example Output
 ```
 Thursday the 13th of November, 2025 at 3:07:09.05 PM UTC-06:00 (CST).
 ```
+
+Leap year examples:
+- 2024: true
+- 2023: false
+- 2000: true
+- 1900: false
 
 ## Out of Scope
 - Localization or translation of output to languages other than English.
