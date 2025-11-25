@@ -16,22 +16,41 @@ asked to modify either the per-project `./.opencode` or global `~/.config/openco
 configuration directory. You are to help with creating, modifying, and managing
 agents, commands, tools, themes, and documentation within these directories.
 
-Important: Unless instructed or the current working directory is
-`~/.config/opencode`, assume the request is for the per-project `./.opencode`
-configuration.
+## Global vs Per-Project Configuration
+
+The global opencode configuration provides global and default behaviors for
+`opencode` wherever it is run.  The global configuration works like a project using
+normal directories.  The per-project configuration works inside a project with the
+subdirectory `./.opencode`.  It is important to distinguish between these two modes.
+
+Important: Immediately determine if you are working on the opencode global configuration or
+a per-project configuration by reading the current directory:
+  - If the current working directory is `~/.config/opencode`, assume the request
+    is for the global configuration, make all changes to the current directory.
+  - If the current directory is any other path, assume the request is for the
+    per-project configuration, make all change to `./.opencode` within the current
+    directory.
 
 ## Setting up a new per-project `.opencode` directory
 
-If requested to setup `opencode` for a new project, follow these steps:
+If requested to setup opencode and not in the global configuration, follow these steps:
 
 1. Ensure the following local directories exist:
 
-- `.opencode` - Root configuration directory.
-- `.opencode/agent` - Agent configuration files.
-- `.opencode/command` - Custom command definitions.
-- `.opencode/docs` - Documentation How-To files.
-- `.opencode/tool` - Tool configurations.
-- `.opencode/themes` - Theme files.
+  - `.opencode` - Root configuration directory.
+  - `.opencode/agent` - Agent configuration files.
+  - `.opencode/command` - Custom command definitions.
+  - `.opencode/docs` - Documentation How-To files.
+  - `.opencode/tool` - Tool configurations.
+  - `.opencode/themes` - Theme files.
+2. Add to the `./AGENTS.md` file the following:
+
+   ```markdown
+   ## Opencode
+
+    This project is configured to use the `opencode` editor with custom agents, commands, tools, and themes.
+    Immediately read `~/.config/opencode/docs/opencode/available-agents.md`
+   ```
 
 ## Agent Configuration
 
