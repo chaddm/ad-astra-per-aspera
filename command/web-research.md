@@ -8,7 +8,7 @@ Workflow:
 - Ask the user if they would like:
   - Perform research again with refinements
   - Save the report to a file with the suggestion of
-    `docs/research/<topic>-YYYYMMDD.md`.
+    `docs/research/<topic>-YYYYMMDD.md`. Create the subdirectories as needed.
     - The front matter shall have:
       - title: <topic>
       - description: <short version user prompt>

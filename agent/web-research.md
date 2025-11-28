@@ -1,7 +1,7 @@
 ---
 description: Performs web research using DuckDuckGo and coordinates page fetching
 mode: subagent
-model: github-copilot/claude-sonnet-4
+model: github-copilot/gpt-4.1
 temperature: 0.4
 tools:
   write: true
