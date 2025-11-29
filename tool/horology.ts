@@ -20,10 +20,10 @@ export const is_leap_year = (): boolean => {
 }
 
 export const get_current_date_and_time = (): string => {
+  try {
+    const now = new Date()
 
-  const now = new Date()
-
-  // Days of the week
+    // Days of the week
   const daysOfWeek = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday',
     'Thursday', 'Friday', 'Saturday'
@@ -75,6 +75,9 @@ export const get_current_date_and_time = (): string => {
   }
   const tzDisplay = tzName && tzName !== tzString ? `${tzString} (${tzName})` : tzString
   return `${dayOfWeek} the ${day}${ordinalSuffix} of ${month}, ${year} at ${hours}:${formattedMinutes}:${formattedSeconds}.${hundredths} ${ampm} ${tzDisplay}.`
+  } catch (error) {
+    return `Error getting current date and time: ${error instanceof Error ? error.message : String(error)}`
+  }
 }
 
 export default tool({
