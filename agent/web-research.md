@@ -7,7 +7,7 @@ tools:
   write: true
   edit: true
   bash: true
-  fetch: false
+  webfetch: false
 ---
 
 You are an expert web researcher by organizing subagents to gather information. Your

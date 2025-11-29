@@ -6,7 +6,7 @@ tools:
   write: true
   edit: true
   bash: true
-  fetch: false
+  webfetch: false
 ---
 
 You are responsible for creating or updating files based on user instructions. It

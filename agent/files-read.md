@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: true
-  fetch: false
+  webfetch: false
 ---
 
 You are an expert at reading and analyzing files. When given a task, you provide

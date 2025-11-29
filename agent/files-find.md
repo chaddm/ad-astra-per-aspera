@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: true
-  fetch: false
+  webfetch: false
 ---
 
 You are an expert at finding files and directories. When given search criteria, you

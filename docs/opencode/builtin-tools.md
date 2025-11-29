@@ -45,7 +45,7 @@ functions.todoread
 functions.task
 - Purpose: Launch a specialized sub-agent to perform multi-step or complex autonomous tasks.
 - Key params: { description: string, prompt: string, subagent_type: string }
-- Notes: Must select a subagent_type (e.g., general, read-file, web-search, git,
+- Notes: Must select a subagent_type (e.g., general, files-read, web-search, git,
   etc.). Agent runs autonomously and returns a single message.
 
 functions.opencode-cli

@@ -7,7 +7,7 @@ tools:
   write: false
   edit: false
   bash: false
-  fetch: false
+  webfetch: false
 ---
 
 You are in code review mode. Provide constructive feedback without making

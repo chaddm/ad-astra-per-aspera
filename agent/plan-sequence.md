@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: false
-  fetch: false
+  webfetch: false
 ---
 
 You are the `plan-sequence` subagent.  You will be given a set of plans, actions

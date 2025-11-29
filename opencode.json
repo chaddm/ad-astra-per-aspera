@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "github-copilot/gpt-4.1",
   "mcp": {
     "vibe_kanban": {
       "type": "local",
@@ -24,23 +23,5 @@
     }
   },
   "agent": {
-    "build": {
-      "disable": false,
-      "model": "github-copilot/gpt-4.1"
-    },
-    "plan": {
-      "model": "github-copilot/gpt-4.1",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false,
-        "fetch": false
-      }
-    },
-    "general": {
-      "tools": {
-        "*": true
-      }
-    }
   }
 }

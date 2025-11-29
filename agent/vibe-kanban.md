@@ -7,7 +7,7 @@ tools:
   write: false
   edit: false
   bash: false
-  fetch: false
+  webfetch: false
 ---
 
 # Vibe-Kanban Agent

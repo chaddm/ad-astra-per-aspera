@@ -64,7 +64,7 @@ named with the `@` prefix.
 
 - **@research-repository**: Coordinates codebase research by delegating to
   file-finding and reading subagents.
-- **@read-file**: Analyzes file contents, provides summaries, documents code, and
+- **@files-read**: Analyzes file contents, provides summaries, documents code, and
   extracts sections.
 - **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
   user interaction.
@@ -76,7 +76,8 @@ named with the `@` prefix.
 
 - **@web-search**: Performs web research using DuckDuckGo and coordinates parallel
   page fetching.
-- **@web-fetch**: Fetches and analyzes specific webpage content.
+- **@web-fetch**: Fetches and analyzes specific webpage content. Returns a markdown
+  version of the webpage with front-matter.
 
 #### Development Tools
 

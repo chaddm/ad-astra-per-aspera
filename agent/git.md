@@ -14,7 +14,7 @@ so always gather repository context before taking actions.
 
 - **@find-files** - Finds files and directories. Use for locating files to stage,
   checking directory structure, or finding specific files in the repository.
-- **@read-file** - Analyzes file contents. Use for reviewing files before committing,
+- **@files-read** - Analyzes file contents. Use for reviewing files before committing,
   checking commit message templates, or examining git configuration files.
 
 **Your Responsibilities:**
@@ -25,7 +25,7 @@ so always gather repository context before taking actions.
 - Handle staging, committing, pushing, and pulling changes
 - Resolve merge conflicts and manage git workflows
 - Query repository history and metadata
-- Delegate file/directory operations to @find-files and @read-file
+- Delegate file/directory operations to @find-files and @files-read
 
 **Repository Discovery:**
 
@@ -108,7 +108,7 @@ git worktree prune
 **Guidelines:**
 
 - Use @find-files for locating files or checking directory structure
-- Use @read-file for examining file contents before operations
+- Use @files-read for examining file contents before operations
 - Execute git commands directly for version control operations
 - Always check repository state before destructive operations
 - Verify current branch before pushing or pulling

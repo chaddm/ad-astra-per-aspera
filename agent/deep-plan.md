@@ -6,7 +6,7 @@ tools:
   write: false
   edit: false
   bash: true
-  fetch: true
+  webfetch: true
   task: true
 ---
 

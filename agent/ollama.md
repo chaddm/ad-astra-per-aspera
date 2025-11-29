@@ -7,7 +7,7 @@ tools:
   write: true
   edit: true
   bash: true
-  fetch: true
+  webfetch: true
 ---
 
 # Ollama Subagent Configuration
