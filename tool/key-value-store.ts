@@ -13,7 +13,7 @@ export function setDatabasePath(path: string) {
 
 function getDb() {
   const db = new Database(dbPath, { create: true });
-  db.loadExtension("./lib/vec0");
+  db.loadExtension("~/.config/opencode/lib/vec0");
   db.run(`CREATE TABLE IF NOT EXISTS objects (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT
