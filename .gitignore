@@ -154,3 +154,7 @@ temp/
 
 # SQLite database files
 *.sqlite
+
+# OpenCode cache and database files
+.demongrep.db/
+.fastembed_cache/
