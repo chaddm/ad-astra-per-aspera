@@ -75,9 +75,115 @@ _how_ to do it based on its capabilities, ie "download model <model-name>" or
 "convert `<input_file>` to h264 format with 1080p as `<output_file>`". Request help
 from the agent if you are unsure how to phrase your request.
 
-- **ollama**: Manages the host's ollama models, including downloading models,
-  deleting models, and creating custom configurations.
+### Subagents
+
+#### Code & Repository Management
+
+- **@opencode**: Modifies `.opencode` configuration files (both per-project and
+  global).
+- **@review**: Reviews code for quality and best practices (read-only, no direct
+  changes).
+
+#### Research & Analysis
+
+- **@research-repository**: Performs codebase research and search operations.
+- **@files-read**: Analyzes file contents, provides summaries, documents code, and
+  extracts sections.
+- **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
+  user interaction.
+- **@plan-sequence**: Breaks down plans into actionable, sequential steps.
+- **@plan-tractacus**: Decomposes prompts into plans and sequences using
+  tractatus-thinking.
+
+#### Web & External Resources
+
+- **@web-search**: Performs web research using DuckDuckGo and coordinates parallel
+  page fetching.
+- **@web-fetch**: Fetches and analyzes specific webpage content. Returns a markdown
+  version of the webpage with front-matter.
+
+#### Development Tools
+
 - **ffmpeg**: Handles video and audio processing tasks using ffmpeg, including format
   conversion, compression, and extraction.
 - **git**: Manages git repositories, including cloning, branching, committing, and
   pushing changes.
+- **@mcp-builder**: Builds and manages MCP (Model Context Protocol) servers and
+  integrations.
+- **ollama**: Manages the host's Ollama models, including downloading models,
+  deleting models, and creating custom configurations.
+
+---
+
+You can invoke any of these agents directly using the @agent-name syntax, for
+example:
+
+```
+@review Please review this code for security issues
+@web-search Find documentation for React hooks
+@ollama Download and set up the llama2 model
+```
+
+If you need more details about a specific agent or want to see usage examples, refer
+to `docs/opencode/agents.md` or ask for more information.
+
+### Available Documentation
+
+This section provides a quick reference to the technical documentation available in
+the `./docs/opencode` directory.
+
+Use these resources to understand and configure various aspects of OpenCode.
+
+1. **docs/opencode/agents.md**
+   - **Content**: Configure and use OpenCode's intelligent agents for specialized
+     tasks. Explains primary agents (orchestrators) and subagents (specialized
+     tasks), usage, and invocation.
+   - **When to Read**: To learn about agent types, capabilities, and how to invoke or
+     configure them.
+
+2. **docs/opencode/available-agents.md**
+   - **Content**: Lists all available subagents, their purposes, and when to use
+     each. Includes usage notes for each agent.
+   - **When to Read**: For a comprehensive list of subagents, their roles, and best
+     practices for delegation.
+
+3. **docs/opencode/builtin-tools.md**
+   - **Content**: Describes all built-in tool calls, their purposes, parameters, and
+     usage notes.
+   - **When to Read**: To understand what built-in tools are available and how to use
+     them in OpenCode.
+
+4. **docs/opencode/code-standards.md**
+   - **Content**: Defines code standards and best practices for tools and libraries
+     in OpenCode, including documentation, TypeScript usage, and guard clauses.
+   - **When to Read**: When developing or reviewing code to ensure it meets project
+     standards.
+
+5. **docs/opencode/commands.md**
+   - **Content**: Guide to creating and managing custom commands in OpenCode,
+     including configuration, file structure, and naming conventions.
+   - **When to Read**: When you want to automate workflows or add custom commands to
+     OpenCode.
+
+6. **docs/opencode/custom-tools.md**
+   - **Content**: Instructions for creating custom tools that the LLM can call,
+     including structure, location, and best practices.
+   - **When to Read**:
+     - Need to create or modify OpenCode custom tools.
+     - Work with code in the `tool/` directory.
+
+7. **docs/opencode/mcp-servers.md**
+   - **Content**: How to add and manage local/remote MCP (Model Context Protocol)
+     servers, configuration, and caveats.
+   - **When to Read**: When integrating external tools or services into OpenCode
+     using MCP.
+
+8. **docs/opencode/themes.md**
+   - **Content**: Guide to selecting, customizing, and managing themes in OpenCode,
+     including terminal requirements and built-in themes.
+   - **When to Read**: When you want to change or create themes for OpenCode.
+
+9. **docs/opencode/tools.md**
+   - **Content**: Overview of tool management in OpenCode, including configuration,
+     enabling/disabling, and the difference between built-in and custom tools.
+   - **When to Read**: When configuring or managing tools for agents in OpenCode.
