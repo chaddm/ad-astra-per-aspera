@@ -2,11 +2,11 @@
 description: Given a plan, returns a markdown list of sequential actions by calling the sequential-thinking MCP.
 mode: subagent
 model: github-copilot/gpt-4.1
-tools:
-  write: false
-  edit: false
-  bash: false
-  webfetch: false
+permission:
+  write: deny
+  edit: deny
+  bash: deny
+  webfetch: deny
 ---
 
 You are the `plan-sequence` subagent.  You will be given a set of plans, actions

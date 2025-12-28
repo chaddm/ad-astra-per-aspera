@@ -2,22 +2,24 @@
 
 Agents in OpenCode can be customized through frontmatter settings defined at the top
 of the agent markdown file. These settings control various aspects of the agent's
-behavior, including its description, mode, permissions, and available tools. Agents
-are defined in as markdown documents in the `agent/` directory.
+behavior, including its description, mode, permissions, and available tools.
 
 ## Basic Settings
 
-- `description` - A brief description of the agent's purpose.
-- `mode` - The mode of the agent. Types are:
-  - `primary`: Drives high-level orchestration and delegates tasks to other.
-  - `subagent`: Does not appear in the user's agent list and is only invoked by
-    primary agents.
-  - `all`: Appears in the user's agent list and can also be invoked by primary
-    agents.
-- `model` - The LLM model to use for the agent. This can be any supported model.
-  Common models are:
-  - `github-copilot/gpt-4.1`
-  - `github-copilot/claude-sonnet-4.5`.
+`description` - A brief description of the agent's purpose.
+
+`mode` - The mode of the agent. Types are:
+
+- `primary`: Drives high-level orchestration and delegates tasks to other.
+- `subagent`: Does not appear in the user's agent list and is only invoked by primary
+  agents.
+- `all`: Appears in the user's agent list and can also be invoked by primary agents.
+
+`model` - The LLM model to use for the agent. This can be any supported model. Common
+models are:
+
+- `github-copilot/gpt-4.1`
+- `github-copilot/claude-sonnet-4.5`.
 
 Model-specific parameters can be set using additional frontmatter settings. For
 example:
@@ -26,10 +28,10 @@ example:
 
 ## Permissions
 
-The `permission` control is for functionality that agents can access. This includes
-file manipulation, shell command execution, web fetching, and more. Permissions are
-defined under the `permission` frontmatter setting. Each permission can be set to one
-of three values:
+The `permission` control is for the built-in functionality that agents can access.
+This includes file manipulation, shell command execution, web fetching, and more.
+Permissions are defined under the `permission` frontmatter setting. Each permission
+can be set to one of three values:
 
 - `ask` — Prompt for approval.
 - `allow` — Allow without approval.
@@ -108,11 +110,10 @@ Return a code review of the current branch's changes in Markdown format.
 
 ## Tools
 
-The `tool` control is for extensions to the Opencode program, which includes built-in
-extensions, custom tool extensions, and configured MCP services. Each permission can
-be set to `true` or `false` to enable or disable the tool for the agent.
-
-Built-in Opencode tools are listed by name:
+The `tool` control is for extensions to to the Opencode program, which includes
+built-in extensions, custom tool extensions, and configured MCP services. Each
+permission can be set to `true` or `false` to enable or disable the tool for the
+agent. Built-in Opencode tools are listed by name:
 
 - `bash` - Allows shell command execution.
 - `edit` - Allows file editing by string match-and-replace.
@@ -120,7 +121,9 @@ Built-in Opencode tools are listed by name:
 - `read` - Allows file reading.
 - `grep` - Allows searching file contents.
 - `glob` - Allows searching for files and directories by pattern.
-- `list` - Allows listing files and directories. analysis and completion.
+- `list` - Allows listing files and directories.
+- `lsp` - Allows interaction with Language Server Protocol (LSP) services for code
+  analysis and completion.
 - `patch` - Allows applying difference patches to files.
 - `skill` - Allows access to skills.
 
@@ -139,6 +142,7 @@ tools:
   grep: true
   glob: true
   list: true
+  lsp: true
   patch: true
   skill: true
 ---
@@ -146,39 +150,3 @@ tools:
 
 > Note: Unlike permissions, tools are enabled or disabled without granular control
 > over specific commands or functions.
-
-## Example Starter Agent Configuration
-
-The following is a starter "safe" agent configuration that enables basic read-only
-access without any file modifications or shell command execution.
-
-```
----
-description: Project orchestrator that delegates tasks to specialized subagents.
-mode: primary
-model: github-copilot/gpt-4.1
-temperature: 0.1
-permission:
-  external_directory: ask
-  doom_loop: allow
-  edit: ask
-  patch: ask
-  write: ask
-  webfetch: allow
-  bash: ask
-  skill: ask
-tools:
-  bash: true
-  edit: true
-  write: true
-  read: true
-  grep: true
-  glob: true
-  list: true
-  patch: false
-  skill: true
----
-
-You are the project orchestrator. Your role is to coordinate work across the project
-by delegating tasks to specialized subagents.
-```

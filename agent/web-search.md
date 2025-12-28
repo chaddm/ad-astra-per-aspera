@@ -3,11 +3,11 @@ description: Performs web research using DuckDuckGo and coordinates page fetchin
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.4
-tools:
-  write: true
-  edit: true
-  bash: true
-  webfetch: false
+permission:
+  write: allow
+  edit: allow
+  bash: allow
+  webfetch: deny
 ---
 
 You are an expert web researcher by organizing subagents to gather information. Your

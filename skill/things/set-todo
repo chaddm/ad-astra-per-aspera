@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+# set-todo: Update a Things3 to-do's properties and return the updated to-do as CSV
+# Usage: ./set-todo <TODO_ID> [name=...] [status=...] [notes=...] [tag_names=...]
+
+# Check if to-do ID is provided
+if [ -z "$1" ]; then
+    echo "Error: To-do ID is required" >&2
+    echo "Usage: ./set-todo <todo_id> [name=...] [status=...] [notes=...] [tag_names=...]" >&2
+    exit 1
+fi
+
+TODO_ID="$1"
+shift
+
+# Parse named arguments
+UPDATE_NAME=""
+UPDATE_STATUS=""
+UPDATE_NOTES=""
+UPDATE_TAG_NAMES=""
+HAS_UPDATES=false
+
+for arg in "$@"; do
+    case "$arg" in
+        name=*)
+            UPDATE_NAME="${arg#name=}"
+            HAS_UPDATES=true
+            ;;
+        status=*)
+            UPDATE_STATUS="${arg#status=}"
+            HAS_UPDATES=true
+            ;;
+        notes=*)
+            UPDATE_NOTES="${arg#notes=}"
+            HAS_UPDATES=true
+            ;;
+        tag_names=*)
+            UPDATE_TAG_NAMES="${arg#tag_names=}"
+            HAS_UPDATES=true
+            ;;
+    esac
+done
+
+if [ "$HAS_UPDATES" = false ]; then
+    echo "Error: At least one field to update is required (name, status, notes, or tag_names)" >&2
+    exit 1
+fi
+
+# Validate status if provided
+if [ -n "$UPDATE_STATUS" ]; then
+    if [[ ! "$UPDATE_STATUS" =~ ^(open|completed|cancelled)$ ]]; then
+        echo "Error: Invalid status '$UPDATE_STATUS'. Must be: open, completed, or cancelled" >&2
+        exit 1
+    fi
+fi
+
+osascript - "$TODO_ID" "$UPDATE_NAME" "$UPDATE_STATUS" "$UPDATE_NOTES" "$UPDATE_TAG_NAMES" <<'EOF'
+on replaceText(theText, findText, replaceWith)
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to findText
+    set textItems to every text item of theText
+    set AppleScript's text item delimiters to replaceWith
+    set theText to textItems as string
+    set AppleScript's text item delimiters to oldDelims
+    return theText
+end replaceText
+
+on trimString(theString)
+    set theChars to {space, tab, ASCII character 10, ASCII character 13}
+    set t to theString as text
+    repeat while t is not "" and (character 1 of t is in theChars)
+        if (count of t) > 1 then
+            set t to text 2 thru -1 of t
+        else
+            set t to ""
+        end if
+    end repeat
+    repeat while t is not "" and (character -1 of t is in theChars)
+        if (count of t) > 1 then
+            set t to text 1 thru -2 of t
+        else
+            set t to ""
+        end if
+    end repeat
+    return t
+end trimString
+
+on run argv
+    set todoID to item 1 of argv as string
+    set updateName to item 2 of argv as string
+    set updateStatus to item 3 of argv as string
+    set updateNotes to item 4 of argv as string
+    set updateTagNames to item 5 of argv as string
+    
+    tell application "Things3"
+        -- Try to get the to-do by ID
+        try
+            set theTodo to to do id todoID
+        on error
+            error "Error: To-do not found with ID: " & todoID
+        end try
+        
+        -- Update name if provided
+        if updateName is not "" then
+            set name of theTodo to updateName
+        end if
+        
+        -- Update status if provided
+        if updateStatus is not "" then
+            if updateStatus is "open" then
+                set status of theTodo to open
+            else if updateStatus is "completed" then
+                set status of theTodo to completed
+            else if updateStatus is "cancelled" then
+                set status of theTodo to canceled
+            end if
+        end if
+        
+        -- Update notes if provided
+        if updateNotes is not "" then
+            set notes of theTodo to updateNotes
+        end if
+        
+        -- Update tags if provided
+        if updateTagNames is not "" then
+            set oldDelims to AppleScript's text item delimiters
+            set AppleScript's text item delimiters to ";"
+            set tagNamesList to text items of updateTagNames
+            set AppleScript's text item delimiters to oldDelims
+            
+            set tagObjs to {}
+            repeat with tagName in tagNamesList
+                set tagStr to my trimString(tagName as string)
+                if tagStr is not "" then
+                    try
+                        set foundTag to tag tagStr
+                        set end of tagObjs to foundTag
+                    on error
+                        error "Error: Tag '" & tagStr & "' not found"
+                    end try
+                end if
+            end repeat
+            set tags of theTodo to tagObjs
+        end if
+        
+        -- Now retrieve the updated to-do and format as CSV (same as get-todo)
+        set todo_id to id of theTodo
+        set todo_name to name of theTodo
+        set todo_status to (status of theTodo) as string
+        
+        -- Get notes
+        set todo_notes to ""
+        try
+            set todo_notes to notes of theTodo as string
+        end try
+        
+        -- Get tag names (semicolon-separated)
+        set todo_tag_names_str to ""
+        try
+            set todo_tag_list to tag names of theTodo
+            if (count of todo_tag_list) > 0 then
+                set oldDelims to AppleScript's text item delimiters
+                set AppleScript's text item delimiters to "; "
+                set todo_tag_names_str to todo_tag_list as string
+                set AppleScript's text item delimiters to oldDelims
+            end if
+        end try
+        
+        -- Dates
+        set todo_due_date_str to ""
+        set todo_creation_date_str to ""
+        set todo_modification_date_str to ""
+        set todo_completion_date_str to ""
+        try
+            set dd to due date of theTodo
+            if dd is not missing value then set todo_due_date_str to dd as string
+        end try
+        try
+            set cd to creation date of theTodo
+            if cd is not missing value then set todo_creation_date_str to cd as string
+        end try
+        try
+            set md to modification date of theTodo
+            if md is not missing value then set todo_modification_date_str to md as string
+        end try
+        try
+            set cpd to completion date of theTodo
+            if cpd is not missing value then set todo_completion_date_str to cpd as string
+        end try
+        
+        -- Escape quotes for CSV
+        set todo_id to my replaceText(todo_id, "\"", "\"\"")
+        set todo_name to my replaceText(todo_name, "\"", "\"\"")
+        set todo_status to my replaceText(todo_status, "\"", "\"\"")
+        set todo_notes to my replaceText(todo_notes, "\"", "\"\"")
+        set todo_tag_names_str to my replaceText(todo_tag_names_str, "\"", "\"\"")
+        set todo_due_date_str to my replaceText(todo_due_date_str, "\"", "\"\"")
+        set todo_creation_date_str to my replaceText(todo_creation_date_str, "\"", "\"\"")
+        set todo_modification_date_str to my replaceText(todo_modification_date_str, "\"", "\"\"")
+        set todo_completion_date_str to my replaceText(todo_completion_date_str, "\"", "\"\"")
+        
+        -- Output CSV: header + single row (same as get-todo)
+        set headerLine to "\"id\",\"name\",\"status\",\"notes\",\"tag_names\",\"due_date\",\"creation_date\",\"modification_date\",\"completion_date\""
+        set csvLine to "\"" & todo_id & "\",\"" & todo_name & "\",\"" & todo_status & "\",\"" & todo_notes & "\",\"" & todo_tag_names_str & "\",\"" & todo_due_date_str & "\",\"" & todo_creation_date_str & "\",\"" & todo_modification_date_str & "\",\"" & todo_completion_date_str & "\""
+        return headerLine & linefeed & csvLine
+    end tell
+end run
+EOF

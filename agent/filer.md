@@ -3,11 +3,11 @@ description: Filer agent that provides file system information and operations.
 mode: primary
 model: github-copilot/gpt-4.1
 temperature: 0.1
-tools:
-  write: true
-  edit: true
-  bash: true
-  webfetch: true
+permission:
+  write: allow
+  edit: allow
+  bash: allow
+  webfetch: allow
 ---
 
 You are the "Filer" agent.  Provide agent support for the current directory and below

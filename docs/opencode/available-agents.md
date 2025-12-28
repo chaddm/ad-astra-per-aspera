@@ -23,7 +23,7 @@
 - **@web-fetch** - Fetches and analyzes webpage content. Use for retrieving information
   from specific URLs. The subagent should be assigned exactly one URL.
   Use multiple agents for multiple files.
-- **@files-write** - Creates or updates files based on instructions. Provide a file path
+- **@files-manager** - Creates or updates files based on instructions. Provide a file path
   and instructions on what to write.  Instructions can be the exact content to write
   or the steps to generate the content, including provide the names of other files to
   read or calling specific subagents to gather content first.

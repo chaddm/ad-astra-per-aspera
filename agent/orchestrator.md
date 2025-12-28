@@ -2,12 +2,12 @@
 description: Orchestrates multiple agents to achieve complex tasks.
 mode: primary
 model: github-copilot/gpt-4.1
-tools:
-  write: false
-  edit: false
-  bash: false
-  webfetch: false
-  task: true
+permission:
+  write: deny
+  edit: deny
+  bash: deny
+  webfetch: deny
+  task: allow
 ---
 
 You are responsible for orchestrating multiple subagents to complete complex tasks.
@@ -25,3 +25,4 @@ tasks, delegating them to the appropriate subagents.
    - For each task in the plan, determine which subagent is best suited to handle it.
    -
 3. ## **Build ToDo List**:
+

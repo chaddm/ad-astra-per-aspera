@@ -1,172 +1,83 @@
 # AGENTS.md
 
-## Purpose
+## Project Information
 
-This directory serves as the global configuration directory for the `opencode`
-open-source editor application.
+This project is for managing the global configuration of OpenCode, an open-source
+text-based UI application that leverages large language models (LLMs) to assist with
+developer-related tasks, including code generation, refactoring, documentation, file
+and directory management, project orchestration, etc.
 
-Agents working in `~/.config/opencode/` directory are responsible for managing and
-maintaining the global configuration files, adding or modifying agents and tools, and
-ensuring the integrity of the `opencode` setup.
+OpenCode is extended by creating files in specific directories to define custom
+tools, commands, and agents to fit specific workflows. This directory
+(`~/.config/opencode/`) is the global configuration location for OpenCode. OpenCode
+implements the following concepts:
 
-**IMPORTANT**: NEVER generate per-project-specific configuration files in
-`~/.config/opencode/`.
+**Agents** are modes of operation that provides specialized behavior. The agents are
+defined in the `agent/` directory as markdown files. The configuration defines the
+name, description, LLM model with LLM parameters, permissions and system prompt.
+Information on modifying agents is found in `docs/opencode/agents.md`. Instructions
+may be `delegated` to agents which will run in a separate context. This allows the
+agent to focus on the specific task without being distracted by other context or
+information.
 
-## Agents
+> Important - When a task is delegated to an agent, the new agent is created with an
+> new context loaded the agent's system prompt and the prompt provided. It will not
+> have access to the previous context or conversation history. Use the instructions
+> provided to provide the appropriate context for the delegated task. Finally, always
+> validate delegated tasks with acceptance criteria to ensure the agent performs the
+> task as expected.
 
-Agents are named configurations opencode that are meant perform specific tasks and/or
-stay within specific constraints. Every agent can be configured with specific name,
-description, agent type, permissions, and a system prompt.
+**Commands** are custom instructions for specific tasks that can be invoked by the
+user with a slash (ie `/my-command`). Commands are defined by markdown files in the
+`command/` directory. Information on creating commands is found in
+`docs/opencode/commands.md`.
 
-The major benefit of agents is delegation. When an agent delegates to a subagent, the
-subagent received a fresh context and can focus on the specific task at hand without
-being distracted by other context or information. Whatever the subagent returns is
-received by the parent agent as if it were a tool call result.
+**Custom Tools** are JavaScript/TypeScript functions that can be invoked by agents to
+perform programmatic tasks. Custom tools are defined in the `tool/` directory.
+Information on developing custom tools is found in `docs/opencode/custom-tools.md`.
+OpenCode uses the `bun` runtime and will include packages in the `package.json` file
+for use in custom tools.
 
-Agents have two types, Primary and Subagent. Technically, the only difference is that
-Primary agents appear in the user's TUI for direct interaction and can be selected by
-the user. Subagent are not directly selectable by the user and are available only by
-delegation from a Primary agent or another Subagent. An agent can delegate to a
-primary agent; however, primary agents may be written with the expectation of user
-interaction, which will not be available.
+**Themes** define the appearance of OpenCode in the terminal. Themes are defined in
+the `themes/` directory. Information on selecting or creating themes is found in
+`docs/opencode/themes.md`.
 
-For Agents: Immediately read `docs/agents.md` for a comprehensive overview of agents,
-their types, and usage instructions. When possible, use subagents to handle specific
-tasks or functionalities.
+**Technical Documentation** is provided in the `docs/` directory. This includes
+technical documentation for being able to develop agents, commands, and tools. When
+developing agents, commands, custom tools, specification files, tests, themes, etc,
+always read related technical documentation under the `docs/` directory.
 
-## List of Agents
+Notable directories are:
 
-Any agent can invoke any other agent if they have the `task` permission. Agents are
-named with the `@` prefix.
+- `docs/opencode`: Directory containing technical documentation related to OpenCode
+  configuration, development, and usage, including agents, commands, tools, themes,
+  MCP servers, and more. Important OpenCode documentation files include:
+  - `docs/opencode/agents.md`: Development guide to agent creation and configuration.
+  - `docs/opencode/commands.md`: Development guide to creating and managing custom
+    commands in OpenCode.
+  - `docs/opencode/custom-tools.md`: Development guide for custom tools.
+- `docs/guides/`: Directory containing user guides and tutorials for specific
+  libraries and CLI tools as reference when developing custom tools or instructions
+  for agents calling shell commands. Important guide files include:
+  - `docs/guides/code-best-practices.md`: Always read this guide when developing
+    code.
+  - `docs/guides/toon-format.md`: Always read this guide when required to work with
+    TOON format input/output.
+- `docs/mcps/`: Directory containing documentation related to Model Context Protocol
+  (MCP) servers, including setup guides and usage instructions for integrating
 
-### Primary Agents
+## Specific Purpose Agents
 
-- **@vibe-kanban**: Manages kanbawhile reserving primary agents for overarching
-  management andn boards and tasks using the vibe-kanban MCP API. Handles
-  project/task management, automation, and kanban best practices.
-- **@ask**: Project orchestrator that delegates tasks to specialized subagents in
-  read-only mode.
-- **@claud-think**: Project orchestrator that analyzes requests and delegates to
-  subagents (does not implement directly).
-- **@gpt-think**: Similar to @claud-think, orchestrates work by delegating to
-  subagents.
+The following agents are specifically defined for particular tasks and have
+instructions for their use cases. Delegate tasks to these agents when appropriate.
+Provide clear instructions for _what_ you want the agent to do. The agent will handle
+_how_ to do it based on its capabilities, ie "download model <model-name>" or
+"convert `<input_file>` to h264 format with 1080p as `<output_file>`". Request help
+from the agent if you are unsure how to phrase your request.
 
-### Subagents
-
-#### Code & Repository Management
-
-- **@opencode**: Modifies `.opencode` configuration files (both per-project and
-  global).
-- **@review**: Reviews code for quality and best practices (read-only, no direct
-  changes).
-
-#### Research & Analysis
-
-- **@research-repository**: Coordinates codebase research by delegating to
-  file-finding and reading subagents.
-- **@files-read**: Analyzes file contents, provides summaries, documents code, and
-  extracts sections.
-- **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
-  user interaction.
-- **@plan-sequence**: Breaks down plans into actionable, sequential steps.
-- **@plan-tractacus**: Decomposes prompts into plans and sequences using
-  tractatus-thinking.
-
-#### Web & External Resources
-
-- **@web-search**: Performs web research using DuckDuckGo and coordinates parallel
-  page fetching.
-- **@web-fetch**: Fetches and analyzes specific webpage content. Returns a markdown
-  version of the webpage with front-matter.
-
-#### Development Tools
-
-- **@mcp-builder**: Builds and manages MCP (Model Context Protocol) servers and
-  integrations.
-- **@ollama**: Manages Ollama models and configurations (download, delete, info,
-  create, etc.).
-- **@git**: Executes git commands as a non-interactive git expert.
-- **@write-file**: Creates, overwrites, or patches files as instructed.
-
----
-
-You can invoke any of these agents directly using the @agent-name syntax, for
-example:
-
-```
-@review Please review this code for security issues
-@web-search Find documentation for React hooks
-@ollama Download and set up the llama2 model
-```
-
-If you need more details about a specific agent or want to see usage examples, refer
-to `docs/opencode/agents.md` or ask for more information.
-
-### Available Documentation
-
-This section provides a quick reference to the technical documentation available in
-the `./docs/opencode` directory.
-
-Use these resources to understand and configure various aspects of OpenCode.
-
-1. **docs/opencode/agents.md**
-
-   - **Content**: Configure and use OpenCode's intelligent agents for specialized
-     tasks. Explains primary agents (orchestrators) and subagents (specialized
-     tasks), usage, and invocation.
-   - **When to Read**: To learn about agent types, capabilities, and how to invoke or
-     configure them.
-
-2. **docs/opencode/available-agents.md**
-
-   - **Content**: Lists all available subagents, their purposes, and when to use
-     each. Includes usage notes for each agent.
-   - **When to Read**: For a comprehensive list of subagents, their roles, and best
-     practices for delegation.
-
-3. **docs/opencode/builtin-tools.md**
-
-   - **Content**: Describes all built-in tool calls, their purposes, parameters, and
-     usage notes.
-   - **When to Read**: To understand what built-in tools are available and how to use
-     them in OpenCode.
-
-4. **docs/opencode/code-standards.md**
-
-   - **Content**: Defines code standards and best practices for tools and libraries
-     in OpenCode, including documentation, TypeScript usage, and guard clauses.
-   - **When to Read**: When developing or reviewing code to ensure it meets project
-     standards.
-
-5. **docs/opencode/commands.md**
-
-   - **Content**: Guide to creating and managing custom commands in OpenCode,
-     including configuration, file structure, and naming conventions.
-   - **When to Read**: When you want to automate workflows or add custom commands to
-     OpenCode.
-
-6. **docs/opencode/custom-tools.md**
-
-   - **Content**: Instructions for creating custom tools that the LLM can call,
-     including structure, location, and best practices.
-   - **When to Read**:
-     - Need to create or modify OpenCode custom tools.
-     - Work with code in the `tool/` directory.
-
-7. **docs/opencode/mcp-servers.md**
-
-   - **Content**: How to add and manage local/remote MCP (Model Context Protocol)
-     servers, configuration, and caveats.
-   - **When to Read**: When integrating external tools or services into OpenCode
-     using MCP.
-
-8. **docs/opencode/themes.md**
-
-   - **Content**: Guide to selecting, customizing, and managing themes in OpenCode,
-     including terminal requirements and built-in themes.
-   - **When to Read**: When you want to change or create themes for OpenCode.
-
-9. **docs/opencode/tools.md**
-   - **Content**: Overview of tool management in OpenCode, including configuration,
-     enabling/disabling, and the difference between built-in and custom tools.
-   - **When to Read**: When configuring or managing tools for agents in OpenCode.
+- **ollama**: Manages the host's ollama models, including downloading models,
+  deleting models, and creating custom configurations.
+- **ffmpeg**: Handles video and audio processing tasks using ffmpeg, including format
+  conversion, compression, and extraction.
+- **git**: Manages git repositories, including cloning, branching, committing, and
+  pushing changes.

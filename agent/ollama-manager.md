@@ -3,11 +3,11 @@ description: Model Context Protocol (MCP) configuration manager and curator
 mode: primary
 model: github-copilot/gpt-4.1
 temperature: 0.1
-tools:
-  write: true
-  edit: true
-  bash: true
-  webfetch: true
+permission:
+  write: allow
+  edit: allow
+  bash: allow
+  webfetch: allow
 ---
 
 # Ollama Subagent Configuration

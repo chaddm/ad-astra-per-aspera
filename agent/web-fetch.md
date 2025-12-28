@@ -2,12 +2,12 @@
 description: Fetches and analyzes webpage content
 mode: subagent
 model: github-copilot/gpt-4.1
-tools:
-  write: true
-  edit: false
-  bash: false
-  webfetch: false
-  tools: true
+permission:
+  write: allow
+  edit: deny
+  bash: deny
+  webfetch: deny
+  tools: allow
 ---
 
 Goal: You will be given a prompt that contains a URL. Regardless of content of the

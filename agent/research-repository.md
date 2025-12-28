@@ -3,12 +3,12 @@ description: Researches the codebase by coordinating file search and analysis
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.3
-tools:
-  write: false
-  edit: false
-  bash: false
-  webfetch: false
-  tools: true
+permission:
+  write: deny
+  edit: deny
+  bash: deny
+  webfetch: deny
+  tools: allow
 ---
 
 You are an expert at coordinating codebase research. When given a task, you delegate
@@ -42,7 +42,7 @@ format.
   - `demongrep_get_file_chunks` - Get all indexed chunks from a specific file. Useful
     for understanding the structure of a file.
     - Parameters:
--     - path (string): Path to the file (relative to project root)
+      - path (string): Path to the file (relative to project root)
 
 **Your Responsibilities:**
 

@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+
+# Retrieves Things3 Areas with properties as CSV
+# Usage: ./get-areas [ids=id1,id2] [name=searchterm] [tags=tag1,tag2]
+# All filters are AND'ed together (area must match ALL specified filters)
+# Within a filter, values are OR'ed (area matches if ANY value matches)
+
+# Parse command line arguments
+IDS_FILTER=""
+NAME_FILTER=""
+TAGS_FILTER=""
+
+for arg in "$@"; do
+    case $arg in
+        ids=*)
+            IDS_FILTER="${arg#*=}"
+            ;;
+        name=*)
+            NAME_FILTER="${arg#*=}"
+            ;;
+        tags=*)
+            TAGS_FILTER="${arg#*=}"
+            ;;
+    esac
+
+done
+
+osascript - "$IDS_FILTER" "$NAME_FILTER" "$TAGS_FILTER" << 'EOF'
+on replaceText(theText, findText, replaceWith)
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to findText
+    set textItems to every text item of theText
+    set AppleScript's text item delimiters to replaceWith
+    set theText to textItems as string
+    set AppleScript's text item delimiters to oldDelims
+    return theText
+end replaceText
+
+on trimText(theText)
+    set whiteSpace to {space, tab, return, linefeed}
+    set textLength to length of theText
+    
+    if textLength is 0 then return ""
+    
+    set startPos to 1
+    set endPos to textLength
+    
+    repeat while startPos <= textLength
+        if whiteSpace contains character startPos of theText then
+            set startPos to startPos + 1
+        else
+            exit repeat
+        end if
+    end repeat
+    
+    repeat while endPos >= startPos
+        if whiteSpace contains character endPos of theText then
+            set endPos to endPos - 1
+        else
+            exit repeat
+        end if
+    end repeat
+    
+    if startPos > endPos then return ""
+    
+    return text startPos thru endPos of theText
+end trimText
+
+on toLower(theText)
+    set lowerChars to "abcdefghijklmnopqrstuvwxyz"
+    set upperChars to "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    set newText to ""
+    
+    repeat with i from 1 to length of theText
+        set theChar to character i of theText
+        set charPos to offset of theChar in upperChars
+        if charPos > 0 then
+            set newText to newText & character charPos of lowerChars
+        else
+            set newText to newText & theChar
+        end if
+    end repeat
+    
+    return newText
+end toLower
+
+on parseCommaSeparated(theString)
+    set resultList to {}
+    if theString is "" then return resultList
+    
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to ","
+    set rawItems to text items of theString
+    set AppleScript's text item delimiters to oldDelims
+    
+    repeat with rawItem in rawItems
+        set trimmedItem to my trimText(rawItem as string)
+        if trimmedItem is not "" then
+            set end of resultList to trimmedItem
+        end if
+    end repeat
+    
+    return resultList
+end parseCommaSeparated
+
+
+
+on run argv
+    -- Get filter arguments
+    set idsFilter to ""
+    set nameFilter to ""
+    set tagsFilter to ""
+    
+    try
+        set idsFilter to item 1 of argv as string
+        set nameFilter to item 2 of argv as string
+        set tagsFilter to item 3 of argv as string
+    end try
+    
+    -- Parse filters
+    set filterIdsList to my parseCommaSeparated(idsFilter)
+    set hasIdsFilter to (count of filterIdsList) > 0
+    
+    set nameFilterLower to my toLower(nameFilter)
+    set hasNameFilter to nameFilter is not ""
+    
+    set filterTagsList to my parseCommaSeparated(tagsFilter)
+    set hasTagsFilter to (count of filterTagsList) > 0
+    
+    tell application "Things3"
+        set outputText to "\"id\",\"name\",\"collapsed\",\"tag_names\"" & linefeed
+        
+        repeat with theArea in areas
+            set area_id to id of theArea
+            set area_name to name of theArea
+            
+            -- Check all filters (AND logic)
+            set includeArea to true
+            
+            -- Filter by IDs
+            if hasIdsFilter and includeArea then
+                set includeArea to false
+                repeat with filterId in filterIdsList
+                    if area_id is equal to (filterId as string) then
+                        set includeArea to true
+                        exit repeat
+                    end if
+                end repeat
+            end if
+            
+            -- Filter by name (case-insensitive substring match)
+            if hasNameFilter and includeArea then
+                set areaNameLower to my toLower(area_name)
+                if areaNameLower does not contain nameFilterLower then
+                    set includeArea to false
+                end if
+            end if
+            
+            -- Filter by tags
+            if hasTagsFilter and includeArea then
+                set includeArea to false
+                try
+                    set tagNamesRaw to tag names of theArea
+                    if (count of tagNamesRaw) > 0 then
+                        -- Convert to semicolon-separated string
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set tagsString to tagNamesRaw as string
+                        set AppleScript's text item delimiters to oldDelims
+                        
+                        -- Split by semicolon to get actual tag names
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set areaTagsList to text items of tagsString
+                        set AppleScript's text item delimiters to oldDelims
+                        
+                        -- Check if any tag matches
+                        repeat with areaTag in areaTagsList
+                            set areaTagStr to areaTag as string
+                            repeat with filterTag in filterTagsList
+                                if areaTagStr is equal to (filterTag as string) then
+                                    set includeArea to true
+                                    exit repeat
+                                end if
+                            end repeat
+                            if includeArea then exit repeat
+                        end repeat
+                    end if
+                end try
+            end if
+            
+            if includeArea then
+                set is_collapsed to collapsed of theArea as boolean
+                
+                -- Get tag names if any
+                set tag_names_str to ""
+                try
+                    set tag_list to tag names of theArea
+                    if (count of tag_list) > 0 then
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set tag_names_str to tag_list as string
+                        set AppleScript's text item delimiters to oldDelims
+                    end if
+                end try
+                
+                -- Escape quotes in fields
+                set area_id to my replaceText(area_id, "\"", "\"\"")
+                set area_name to my replaceText(area_name, "\"", "\"\"")
+                set tag_names_str to my replaceText(tag_names_str, "\"", "\"\"")
+                
+                -- Build CSV line
+                set csvLine to "\"" & area_id & "\",\"" & area_name & "\",\"" & (is_collapsed as string) & "\",\"" & tag_names_str & "\""
+                set outputText to outputText & csvLine & linefeed
+            end if
+        end repeat
+        
+        return outputText
+    end tell
+end run
+EOF

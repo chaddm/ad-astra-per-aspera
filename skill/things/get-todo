@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+
+# Retrieves detailed information for a single Things3 To-do by ID, outputs CSV (header + 1 row)
+# Usage: ./get-todo <todo_id>
+
+# Check if to-do ID is provided
+if [ -z "$1" ]; then
+    echo "Error: To-do ID is required" >&2
+    exit 1
+fi
+
+TODO_ID="$1"
+
+osascript - "$TODO_ID" <<'EOF'
+on replaceText(theText, findText, replaceWith)
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to findText
+    set textItems to every text item of theText
+    set AppleScript's text item delimiters to replaceWith
+    set theText to textItems as string
+    set AppleScript's text item delimiters to oldDelims
+    return theText
+end replaceText
+
+on run argv
+    set todoID to item 1 of argv as string
+
+    tell application "Things3"
+        -- Try to get the to-do by ID
+        try
+            set theTodo to to do id todoID
+        on error
+            do shell script "echo 'Error: To-do not found with ID: " & todoID & "' >&2"
+            error "stopme"
+        end try
+
+        -- Get basic fields
+        set todo_id to id of theTodo
+        set todo_name to name of theTodo
+        set todo_status to (status of theTodo) as string
+
+        -- Get notes
+        set todo_notes to ""
+        try
+            set todo_notes to notes of theTodo as string
+        end try
+
+        -- Get tag names (semicolon-separated)
+        set todo_tag_names_str to ""
+        try
+            set todo_tag_list to tag names of theTodo
+            if (count of todo_tag_list) > 0 then
+                set oldDelims to AppleScript's text item delimiters
+                set AppleScript's text item delimiters to "; "
+                set todo_tag_names_str to todo_tag_list as string
+                set AppleScript's text item delimiters to oldDelims
+            end if
+        end try
+
+        -- Dates
+        set todo_due_date_str to ""
+        set todo_creation_date_str to ""
+        set todo_modification_date_str to ""
+        set todo_completion_date_str to ""
+        try
+            set dd to due date of theTodo
+            if dd is not missing value then set todo_due_date_str to dd as string
+        end try
+        try
+            set cd to creation date of theTodo
+            if cd is not missing value then set todo_creation_date_str to cd as string
+        end try
+        try
+            set md to modification date of theTodo
+            if md is not missing value then set todo_modification_date_str to md as string
+        end try
+        try
+            set cpd to completion date of theTodo
+            if cpd is not missing value then set todo_completion_date_str to cpd as string
+        end try
+
+        -- Escape quotes for CSV
+        set todo_id to my replaceText(todo_id, "\"", "\"\"")
+        set todo_name to my replaceText(todo_name, "\"", "\"\"")
+        set todo_status to my replaceText(todo_status, "\"", "\"\"")
+        set todo_notes to my replaceText(todo_notes, "\"", "\"\"")
+        set todo_tag_names_str to my replaceText(todo_tag_names_str, "\"", "\"\"")
+        set todo_due_date_str to my replaceText(todo_due_date_str, "\"", "\"\"")
+        set todo_creation_date_str to my replaceText(todo_creation_date_str, "\"", "\"\"")
+        set todo_modification_date_str to my replaceText(todo_modification_date_str, "\"", "\"\"")
+        set todo_completion_date_str to my replaceText(todo_completion_date_str, "\"", "\"\"")
+
+        -- Output CSV: header + single row
+        set headerLine to "\"id\",\"name\",\"status\",\"notes\",\"tag_names\",\"due_date\",\"creation_date\",\"modification_date\",\"completion_date\""
+        set csvLine to "\"" & todo_id & "\",\"" & todo_name & "\",\"" & todo_status & "\",\"" & todo_notes & "\",\"" & todo_tag_names_str & "\",\"" & todo_due_date_str & "\",\"" & todo_creation_date_str & "\",\"" & todo_modification_date_str & "\",\"" & todo_completion_date_str & "\""
+        return headerLine & linefeed & csvLine
+    end tell
+end run
+EOF

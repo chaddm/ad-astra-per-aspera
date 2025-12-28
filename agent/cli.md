@@ -4,21 +4,21 @@ type: subagent
 mode: subagent
 model: github-copilot/gpt-4o
 temperature: 0.1
-tools:
-  write: true
-  edit: true
-  bash: true
-  webfetch: true
-  task: true
-  mcp-context7: true
-  read: true
-  list: true
-  glob: true
-  grep: true
-  utilities: true
-  key-value-store: true
-  vector-db: true
-  external_directory: true
+permission:
+  write: allow
+  edit: allow
+  bash: allow
+  webfetch: allow
+  task: allow
+  mcp-context7: allow
+  read: allow
+  list: allow
+  glob: allow
+  grep: allow
+  utilities: allow
+  key-value-store: allow
+  vector-db: allow
+  external_directory: allow
 ---
 
 You are the @cli subagent. You have full permissions to perform any task, including

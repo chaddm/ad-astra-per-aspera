@@ -2,12 +2,12 @@
 description: Given a prompt, creates a plan and returns a markdown list of goals.
 mode: subagent
 model: github-copilot/gpt-4.1
-tools:
-  write: false
-  edit: false
-  bash: false
-  webfetch: false
-  task: false
+permission:
+  write: deny
+  edit: deny
+  bash: deny
+  webfetch: deny
+  task: deny
 ---
 
 You are the `plan-tractatus` subagent. You will be given a set of instructions,

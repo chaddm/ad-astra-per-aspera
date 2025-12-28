@@ -1,0 +1,283 @@
+#!/usr/bin/env bash
+
+# Retrieves Things3 Projects with properties as CSV (excluding notes)
+# Usage: ./get-projects [ids=id1,id2] [name=searchterm] [area_ids=aid1,aid2] [tags=tag1,tag2]
+# All filters are AND'ed together (project must match ALL specified filters)
+# Within a filter, values are OR'ed (project matches if ANY value matches)
+
+# Parse command line arguments
+IDS_FILTER=""
+NAME_FILTER=""
+AREA_IDS_FILTER=""
+TAGS_FILTER=""
+
+for arg in "$@"; do
+    case $arg in
+        ids=*)
+            IDS_FILTER="${arg#*=}"
+            ;;
+        name=*)
+            NAME_FILTER="${arg#*=}"
+            ;;
+        area_ids=*)
+            AREA_IDS_FILTER="${arg#*=}"
+            ;;
+        tags=*)
+            TAGS_FILTER="${arg#*=}"
+            ;;
+    esac
+done
+
+osascript - "$IDS_FILTER" "$NAME_FILTER" "$AREA_IDS_FILTER" "$TAGS_FILTER" << 'EOF'
+on replaceText(theText, findText, replaceWith)
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to findText
+    set textItems to every text item of theText
+    set AppleScript's text item delimiters to replaceWith
+    set theText to textItems as string
+    set AppleScript's text item delimiters to oldDelims
+    return theText
+end replaceText
+
+on trimText(theText)
+    set whiteSpace to {space, tab, return, linefeed}
+    set textLength to length of theText
+    
+    if textLength is 0 then return ""
+    
+    set startPos to 1
+    set endPos to textLength
+    
+    repeat while startPos <= textLength
+        if whiteSpace contains character startPos of theText then
+            set startPos to startPos + 1
+        else
+            exit repeat
+        end if
+    end repeat
+    
+    repeat while endPos >= startPos
+        if whiteSpace contains character endPos of theText then
+            set endPos to endPos - 1
+        else
+            exit repeat
+        end if
+    end repeat
+    
+    if startPos > endPos then return ""
+    
+    return text startPos thru endPos of theText
+end trimText
+
+on toLower(theText)
+    set lowerChars to "abcdefghijklmnopqrstuvwxyz"
+    set upperChars to "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    set newText to ""
+    
+    repeat with i from 1 to length of theText
+        set theChar to character i of theText
+        set charPos to offset of theChar in upperChars
+        if charPos > 0 then
+            set newText to newText & character charPos of lowerChars
+        else
+            set newText to newText & theChar
+        end if
+    end repeat
+    
+    return newText
+end toLower
+
+on parseCommaSeparated(theString)
+    set resultList to {}
+    if theString is "" then return resultList
+    
+    set oldDelims to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to ","
+    set rawItems to text items of theString
+    set AppleScript's text item delimiters to oldDelims
+    
+    repeat with rawItem in rawItems
+        set trimmedItem to my trimText(rawItem as string)
+        if trimmedItem is not "" then
+            set end of resultList to trimmedItem
+        end if
+    end repeat
+    
+    return resultList
+end parseCommaSeparated
+
+on run argv
+    -- Get filter arguments
+    set idsFilter to ""
+    set nameFilter to ""
+    set areaIdsFilter to ""
+    set tagsFilter to ""
+    
+    try
+        set idsFilter to item 1 of argv as string
+        set nameFilter to item 2 of argv as string
+        set areaIdsFilter to item 3 of argv as string
+        set tagsFilter to item 4 of argv as string
+    end try
+    
+    -- Parse filters
+    set filterIdsList to my parseCommaSeparated(idsFilter)
+    set hasIdsFilter to (count of filterIdsList) > 0
+    
+    set nameFilterLower to my toLower(nameFilter)
+    set hasNameFilter to nameFilter is not ""
+    
+    set filterAreaIdsList to my parseCommaSeparated(areaIdsFilter)
+    set hasAreaIdsFilter to (count of filterAreaIdsList) > 0
+    
+    set filterTagsList to my parseCommaSeparated(tagsFilter)
+    set hasTagsFilter to (count of filterTagsList) > 0
+    
+    tell application "Things3"
+        set outputText to "\"id\",\"name\",\"status\",\"area_id\",\"area_name\",\"tag_names\",\"due_date\",\"creation_date\",\"modification_date\",\"completion_date\"" & linefeed
+        
+        repeat with theProject in projects
+            set project_id to id of theProject
+            set project_name to name of theProject
+            
+            -- Check all filters (AND logic)
+            set includeProject to true
+            
+            -- Filter by IDs
+            if hasIdsFilter and includeProject then
+                set includeProject to false
+                repeat with filterId in filterIdsList
+                    if project_id is equal to (filterId as string) then
+                        set includeProject to true
+                        exit repeat
+                    end if
+                end repeat
+            end if
+            
+            -- Filter by name (case-insensitive substring match)
+            if hasNameFilter and includeProject then
+                set projectNameLower to my toLower(project_name)
+                if projectNameLower does not contain nameFilterLower then
+                    set includeProject to false
+                end if
+            end if
+            
+            -- Filter by area IDs
+            if hasAreaIdsFilter and includeProject then
+                set includeProject to false
+                try
+                    set projectArea to area of theProject
+                    if projectArea is not missing value then
+                        set project_area_id to id of projectArea
+                        repeat with filterAreaId in filterAreaIdsList
+                            if project_area_id is equal to (filterAreaId as string) then
+                                set includeProject to true
+                                exit repeat
+                            end if
+                        end repeat
+                    end if
+                end try
+            end if
+            
+            -- Filter by tags
+            if hasTagsFilter and includeProject then
+                set includeProject to false
+                try
+                    set tagNamesRaw to tag names of theProject
+                    if (count of tagNamesRaw) > 0 then
+                        -- Convert to semicolon-separated string
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set tagsString to tagNamesRaw as string
+                        set AppleScript's text item delimiters to oldDelims
+                        
+                        -- Split by semicolon to get actual tag names
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set projectTagsList to text items of tagsString
+                        set AppleScript's text item delimiters to oldDelims
+                        
+                        -- Check if any tag matches
+                        repeat with projectTag in projectTagsList
+                            set projectTagStr to projectTag as string
+                            repeat with filterTag in filterTagsList
+                                if projectTagStr is equal to (filterTag as string) then
+                                    set includeProject to true
+                                    exit repeat
+                                end if
+                            end repeat
+                            if includeProject then exit repeat
+                        end repeat
+                    end if
+                end try
+            end if
+            
+            if includeProject then
+                set project_status to (status of theProject) as string
+                
+                -- Get area if exists
+                set area_id_str to ""
+                set area_name_str to ""
+                try
+                    set projectArea to area of theProject
+                    if projectArea is not missing value then
+                        set area_id_str to id of projectArea
+                        set area_name_str to name of projectArea
+                    end if
+                end try
+                
+                -- Get tag names if any
+                set tag_names_str to ""
+                try
+                    set tag_list to tag names of theProject
+                    if (count of tag_list) > 0 then
+                        set oldDelims to AppleScript's text item delimiters
+                        set AppleScript's text item delimiters to "; "
+                        set tag_names_str to tag_list as string
+                        set AppleScript's text item delimiters to oldDelims
+                    end if
+                end try
+                
+                -- Get dates
+                set due_date_str to ""
+                set creation_date_str to ""
+                set modification_date_str to ""
+                set completion_date_str to ""
+                
+                try
+                    set dd to due date of theProject
+                    if dd is not missing value then set due_date_str to dd as string
+                end try
+                
+                try
+                    set cd to creation date of theProject
+                    if cd is not missing value then set creation_date_str to cd as string
+                end try
+                
+                try
+                    set md to modification date of theProject
+                    if md is not missing value then set modification_date_str to md as string
+                end try
+                
+                try
+                    set cpd to completion date of theProject
+                    if cpd is not missing value then set completion_date_str to cpd as string
+                end try
+                
+                -- Escape quotes in fields
+                set project_id to my replaceText(project_id, "\"", "\"\"")
+                set project_name to my replaceText(project_name, "\"", "\"\"")
+                set area_id_str to my replaceText(area_id_str, "\"", "\"\"")
+                set area_name_str to my replaceText(area_name_str, "\"", "\"\"")
+                set tag_names_str to my replaceText(tag_names_str, "\"", "\"\"")
+                
+                -- Build CSV line
+                set csvLine to "\"" & project_id & "\",\"" & project_name & "\",\"" & project_status & "\",\"" & area_id_str & "\",\"" & area_name_str & "\",\"" & tag_names_str & "\",\"" & due_date_str & "\",\"" & creation_date_str & "\",\"" & modification_date_str & "\",\"" & completion_date_str & "\""
+                set outputText to outputText & csvLine & linefeed
+            end if
+        end repeat
+        
+        return outputText
+    end tell
+end run
+EOF

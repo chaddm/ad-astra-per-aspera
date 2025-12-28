@@ -1,0 +1,273 @@
+#!/usr/bin/env bun
+
+import { fetchWeatherApi } from "openmeteo";
+
+const params = {
+  latitude: 38.9822,
+  longitude: -94.6708,
+  hourly: [
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "apparent_temperature",
+    "precipitation_probability",
+    "precipitation",
+    "rain",
+    "showers",
+    "snowfall",
+    "weather_code",
+    "surface_pressure",
+    "cloud_cover",
+    "cloud_cover_low",
+    "cloud_cover_mid",
+    "cloud_cover_high",
+    "visibility",
+    "wind_speed_10m",
+    "wind_gusts_10m",
+    "wind_direction_10m",
+    "uv_index",
+    "uv_index_clear_sky",
+    "is_day",
+    "sunshine_duration",
+  ],
+  timezone: "America/Chicago",
+};
+const url = "https://api.open-meteo.com/v1/forecast";
+const responses = await fetchWeatherApi(url, params);
+
+// Process first location
+const response = responses[0];
+
+// Attributes for timezone and location
+const latitude = response.latitude();
+const longitude = response.longitude();
+const elevation = response.elevation();
+const timezone = response.timezone();
+const timezoneAbbreviation = response.timezoneAbbreviation();
+const utcOffsetSeconds = response.utcOffsetSeconds();
+
+const hourly = response.hourly()!;
+
+// Build weather data arrays
+const weatherData = {
+  time: Array.from(
+    {
+      length:
+        (Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval(),
+    },
+    (_, i) =>
+      new Date(
+        (Number(hourly.time()) + i * hourly.interval() + utcOffsetSeconds) * 1000
+      )
+  ),
+  temperature_2m: hourly.variables(0)!.valuesArray(),
+  relative_humidity_2m: hourly.variables(1)!.valuesArray(),
+  dew_point_2m: hourly.variables(2)!.valuesArray(),
+  apparent_temperature: hourly.variables(3)!.valuesArray(),
+  precipitation_probability: hourly.variables(4)!.valuesArray(),
+  precipitation: hourly.variables(5)!.valuesArray(),
+  rain: hourly.variables(6)!.valuesArray(),
+  showers: hourly.variables(7)!.valuesArray(),
+  snowfall: hourly.variables(8)!.valuesArray(),
+  weather_code: hourly.variables(9)!.valuesArray(),
+  surface_pressure: hourly.variables(10)!.valuesArray(),
+  cloud_cover: hourly.variables(11)!.valuesArray(),
+  cloud_cover_low: hourly.variables(12)!.valuesArray(),
+  cloud_cover_mid: hourly.variables(13)!.valuesArray(),
+  cloud_cover_high: hourly.variables(14)!.valuesArray(),
+  visibility: hourly.variables(15)!.valuesArray(),
+  wind_speed_10m: hourly.variables(16)!.valuesArray(),
+  wind_gusts_10m: hourly.variables(17)!.valuesArray(),
+  wind_direction_10m: hourly.variables(18)!.valuesArray(),
+  uv_index: hourly.variables(19)!.valuesArray(),
+  uv_index_clear_sky: hourly.variables(20)!.valuesArray(),
+  is_day: hourly.variables(21)!.valuesArray(),
+  sunshine_duration: hourly.variables(22)!.valuesArray(),
+};
+
+// Find the index for the current hour
+const now = new Date();
+let currentIndex = 0;
+for (let i = 0; i < weatherData.time.length; i++) {
+  const hourDiff = Math.abs(weatherData.time[i].getTime() - now.getTime());
+  if (hourDiff < 30 * 60 * 1000) { // Within 30 minutes
+    currentIndex = i;
+    break;
+  }
+  if (weatherData.time[i] > now) {
+    // Use the previous hour if we've passed the current time
+    currentIndex = Math.max(0, i - 1);
+    break;
+  }
+}
+
+// Helper functions
+function getWeatherDescription(code: number): string {
+  if (code === 0) return "Clear sky";
+  if (code >= 1 && code <= 3) return "Partly cloudy";
+  if (code === 45 || code === 48) return "Fog";
+  if (code >= 51 && code <= 67) return "Rain";
+  if (code >= 71 && code <= 77) return "Snow";
+  if (code >= 80 && code <= 82) return "Showers";
+  if (code >= 95 && code <= 99) return "Thunderstorm";
+  return "Unknown";
+}
+
+function getCardinalDirection(degrees: number): string {
+  const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  const index = Math.round(((degrees % 360) / 45)) % 8;
+  return directions[index];
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+// Pads/trims a text line to exactly 76 characters (inside borders)
+function padLine(text: string): string {
+  if (text.length > 76) {
+    return text.slice(0, 76);
+  } else {
+    return text + " ".repeat(76 - text.length);
+  }
+}
+
+// Current conditions (dynamic index)
+const current = {
+  time: weatherData.time[currentIndex],
+  temp: weatherData.temperature_2m[currentIndex].toFixed(1),
+  apparent_temp: weatherData.apparent_temperature[currentIndex].toFixed(1),
+  humidity: Math.round(weatherData.relative_humidity_2m[currentIndex]),
+  dew_point: weatherData.dew_point_2m[currentIndex].toFixed(1),
+  weather_code: Math.round(weatherData.weather_code[currentIndex]),
+  wind_speed: weatherData.wind_speed_10m[currentIndex].toFixed(1),
+  wind_direction: getCardinalDirection(weatherData.wind_direction_10m[currentIndex]),
+  wind_gusts: weatherData.wind_gusts_10m[currentIndex].toFixed(1),
+  pressure: weatherData.surface_pressure[currentIndex].toFixed(1),
+  visibility: Math.round(weatherData.visibility[currentIndex]),
+  cloud_cover: Math.round(weatherData.cloud_cover[currentIndex]),
+  cloud_low: Math.round(weatherData.cloud_cover_low[currentIndex]),
+  cloud_mid: Math.round(weatherData.cloud_cover_mid[currentIndex]),
+  cloud_high: Math.round(weatherData.cloud_cover_high[currentIndex]),
+  precip: weatherData.precipitation[currentIndex].toFixed(1),
+  precip_prob: Math.round(weatherData.precipitation_probability[currentIndex]),
+  rain: weatherData.rain[currentIndex].toFixed(1),
+  showers: weatherData.showers[currentIndex].toFixed(1),
+  snow: weatherData.snowfall[currentIndex].toFixed(1),
+  uv_index: weatherData.uv_index[currentIndex].toFixed(1),
+  uv_clear: weatherData.uv_index_clear_sky[currentIndex].toFixed(1),
+  sunshine: Math.round(weatherData.sunshine_duration[currentIndex]),
+  is_day: weatherData.is_day[currentIndex] === 1 ? "Day" : "Night",
+};
+
+// Output
+console.log("╔" + "═".repeat(76) + "╗");
+const title = "WEATHER FORECAST";
+const titlePadding = Math.floor((76 - title.length) / 2);
+console.log("║" + " ".repeat(titlePadding) + title + " ".repeat(76 - titlePadding - title.length) + "║");
+console.log("╠" + "═".repeat(76) + "╣");
+console.log("║" + padLine(`Location: ${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`) + "║");
+console.log("║" + padLine(`Elevation: ${elevation}m asl`) + "║");
+console.log("║" + padLine(`Timezone: ${timezone} (${timezoneAbbreviation})`) + "║");
+console.log("╠" + "═".repeat(76) + "╣");
+const currentTitle = "CURRENT CONDITIONS";
+const currentPadding = Math.floor((76 - currentTitle.length) / 2);
+console.log("║" + " ".repeat(currentPadding) + currentTitle + " ".repeat(76 - currentPadding - currentTitle.length) + "║");
+console.log("╠" + "═".repeat(76) + "╣");
+console.log("║" + padLine(`Time: ${formatTime(new Date())}`) + "║");
+console.log(
+  "║" +
+    padLine(
+      `Temperature: ${current.temp}°C (Feels like: ${current.apparent_temp}°C)`
+    ) +
+    "║"
+);
+console.log("║" + padLine(`Humidity: ${current.humidity}%`) + "║");
+console.log("║" + padLine(`Dew Point: ${current.dew_point}°C`) + "║");
+console.log(
+  "║" + padLine(`Weather: ${getWeatherDescription(current.weather_code)}`) + "║"
+);
+console.log("║" + padLine("") + "║");
+console.log(
+  "║" + padLine(`Wind: ${current.wind_speed} km/h ${current.wind_direction}`) + "║"
+);
+console.log("║" + padLine(`Gusts: ${current.wind_gusts} km/h`) + "║");
+console.log("║" + padLine(`Pressure: ${current.pressure} hPa`) + "║");
+console.log("║" + padLine(`Visibility: ${current.visibility} m`) + "║");
+console.log("║" + padLine("") + "║");
+console.log(
+  "║" + padLine(`Cloud Cover: ${current.cloud_cover}%`) + "║"
+);
+console.log(
+  "║" +
+    padLine(
+      `  Low: ${current.cloud_low}% | Mid: ${current.cloud_mid}% | High: ${current.cloud_high}%`
+    ) +
+    "║"
+);
+console.log("║" + padLine("") + "║");
+console.log(
+  "║" +
+    padLine(
+      `Precipitation: ${current.precip}mm (Probability: ${current.precip_prob}%)`
+    ) +
+    "║"
+);
+console.log(
+  "║" +
+    padLine(
+      `  Rain: ${current.rain}mm | Showers: ${current.showers}mm | Snow: ${current.snow}mm`
+    ) +
+    "║"
+);
+console.log("║" + padLine("") + "║");
+console.log(
+  "║" +
+    padLine(
+      `UV Index: ${current.uv_index} (Clear Sky: ${current.uv_clear})`
+    ) +
+    "║"
+);
+console.log(
+  "║" + padLine(`Sunshine Duration: ${current.sunshine}s`) + "║"
+);
+console.log(
+  "║" + padLine(`Day/Night: ${current.is_day}`) + "║"
+);
+console.log("╠" + "═".repeat(76) + "╣");
+const forecastTitle = "6-HOUR FORECAST";
+const forecastPadding = Math.floor((76 - forecastTitle.length) / 2);
+console.log("║" + " ".repeat(forecastPadding) + forecastTitle + " ".repeat(76 - forecastPadding - forecastTitle.length) + "║");
+console.log("╠" + "═".repeat(76) + "╣");
+// Forecast table header with exact column widths
+const header =
+  "Hour     ".padEnd(10) +
+  "|" +
+  " Temp".padStart(5) +
+  " |" +
+  " Precip".padStart(7) +
+  " |" +
+  "  Wind".padStart(7) +
+  " |" +
+  " Clouds".padStart(7) +
+  " |" +
+  " Conditions".padEnd(29);
+console.log("║" + padLine(header) + "║");
+const separator = "----------" + "|" + "-----" + " |" + "-------" + " |" + "-------" + " |" + "-------" + " |" + "-----------------------------";
+console.log("║" + padLine(separator) + "║");
+// Rows
+for (let i = currentIndex + 1; i <= currentIndex + 6; i++) {
+  const hour = formatTime(weatherData.time[i]).padEnd(10);
+  const temp = (weatherData.temperature_2m[i].toFixed(0) + "°").padStart(5);
+  const precip = (Math.round(weatherData.precipitation_probability[i]) + "%").padStart(7);
+  const wind = (weatherData.wind_speed_10m[i].toFixed(0) + " km").padStart(7);
+  const clouds = (Math.round(weatherData.cloud_cover[i]) + "%").padStart(7);
+  const conditions = getWeatherDescription(Math.round(weatherData.weather_code[i])).padEnd(29);
+  const row = hour + "|" + temp + " |" + precip + " |" + wind + " |" + clouds + " |" + conditions;
+  console.log("║" + padLine(row) + "║");
+}
+console.log("╚" + "═".repeat(76) + "╝");

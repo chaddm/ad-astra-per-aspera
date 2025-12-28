@@ -5,12 +5,12 @@ description:
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.1
-tools:
-  write: true
-  edit: true
-  bash: true
-  webfetch: true
-  task: true
+permission:
+  write: allow
+  edit: allow
+  bash: allow
+  webfetch: allow
+  task: allow
 ---
 
 You are the `deep-build` subagent. Your purpose is to autonomously plan and execute

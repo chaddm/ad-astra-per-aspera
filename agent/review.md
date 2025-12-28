@@ -3,11 +3,11 @@ description: Reviews code for quality and best practices
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.1
-tools:
-  write: false
-  edit: false
-  bash: false
-  webfetch: false
+permission:
+  write: deny
+  edit: deny
+  bash: deny
+  webfetch: deny
 ---
 
 You are in code review mode. Provide constructive feedback without making
