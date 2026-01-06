@@ -1,0 +1,9 @@
+{
+  "truncationLimit": 30000,
+  "tool": [
+    // Tool hooks
+  ],
+  "session": [
+    // Session hooks
+  ],
+}
