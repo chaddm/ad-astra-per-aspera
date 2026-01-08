@@ -15,31 +15,31 @@ This skill provides scripts to interact with Things3 (task management applicatio
 **Get Areas** - Retrieve areas from Things3 with optional filtering.
 
 ```bash
-./skill/things/get-areas [ids=id1,id2] [name=searchterm] [tags=tag1,tag2]
+~/.config/opencode/skill/things/get-areas [ids=id1,id2] [name=searchterm] [tags=tag1,tag2]
 ```
 
 **Get Projects** - Retrieve projects from Things3 with optional filtering.
 
 ```bash
-./skill/things/get-projects [ids=id1,id2] [name=searchterm] [area_ids=aid1,aid2] [tags=tag1,tag2]
+~/.config/opencode/skill/things/get-projects [ids=id1,id2] [name=searchterm] [area_ids=aid1,aid2] [tags=tag1,tag2]
 ```
 
 **Get Project** - Retrieve detailed information for a single project by ID, including all to-dos/items within the project.
 
 ```bash
-./skill/things/get-project <project_id>
+~/.config/opencode/skill/things/get-project <project_id>
 ```
 
 **Get To-do** - Retrieve detailed information for a single to-do by ID.
 
 ```bash
-./skill/things/get-todo <todo_id>
+~/.config/opencode/skill/things/get-todo <todo_id>
 ```
 
 **Set To-do** - Update a to-do's properties (name, status, notes, and/or tags).
 
 ```bash
-./skill/things/set-todo <todo_id> [name=...] [status=...] [notes=...] [tag_names=...]
+~/.config/opencode/skill/things/set-todo <todo_id> [name=...] [status=...] [notes=...] [tag_names=...]
 ```
 
 ## When to use me
@@ -92,51 +92,51 @@ All filters are optional and can be combined. Multiple filters use **AND** logic
 
 ```bash
 # Get all areas
-./skill/things/get-areas
+~/.config/opencode/skill/things/get-areas
 
 # Get specific area by ID
-./skill/things/get-areas ids=RnYsrXCAB2VZCvqkKBeVty
+~/.config/opencode/skill/things/get-areas ids=RnYsrXCAB2VZCvqkKBeVty
 
 # Get multiple areas by ID
-./skill/things/get-areas ids="RnYsrXCAB2VZCvqkKKBeVty, K9U3dAEXnchmJTTCQLput5"
+~/.config/opencode/skill/things/get-areas ids="RnYsrXCAB2VZCvqkKKBeVty, K9U3dAEXnchmJTTCQLput5"
 
 # Search areas by name
-./skill/things/get-areas name=work
+~/.config/opencode/skill/things/get-areas name=work
 
 # Filter by tags
-./skill/things/get-areas tags="Work: Provider Nexus"
+~/.config/opencode/skill/things/get-areas tags="Work: Provider Nexus"
 
 # Combine filters (AND logic)
-./skill/things/get-areas name=work tags="Work: Provider Nexus"
+~/.config/opencode/skill/things/get-areas name=work tags="Work: Provider Nexus"
 ```
 
 ### Get Projects
 
 ```bash
 # Get all projects (may be slow with many projects)
-./skill/things/get-projects
+~/.config/opencode/skill/things/get-projects
 
 # Get specific project by ID
-./skill/things/get-projects ids=2SwCCY2WDAKqksu6oufbwb
+~/.config/opencode/skill/things/get-projects ids=2SwCCY2WDAKqksu6oufbwb
 
 # Search projects by name
-./skill/things/get-projects name=camera
+~/.config/opencode/skill/things/get-projects name=camera
 
 # Get projects in specific area
-./skill/things/get-projects area_ids=K9U3dAEXnchmJTTCQLput5
+~/.config/opencode/skill/things/get-projects area_ids=K9U3dAEXnchmJTTCQLput5
 
 # Get projects in multiple areas
-./skill/things/get-projects area_ids="K9U3dAEXnchmJTTCQLput5, Eq2FmN4cc7fR3E8XE1zuhe"
+~/.config/opencode/skill/things/get-projects area_ids="K9U3dAEXnchmJTTCQLput5, Eq2FmN4cc7fR3E8XE1zuhe"
 
 # Combine filters (name AND area)
-./skill/things/get-projects name=ops area_ids=Eq2FmN4cc7fR3E8XE1zuhe
+~/.config/opencode/skill/things/get-projects name=ops area_ids=Eq2FmN4cc7fR3E8XE1zuhe
 ```
 
 ### Get Project (Single)
 
 ```bash
 # Get detailed information for a specific project including to-dos
-./skill/things/get-project MQnDdHSoUqPbaxxU9s38LM
+~/.config/opencode/skill/things/get-project MQnDdHSoUqPbaxxU9s38LM
 
 # Output format:
 # - Project CSV header + project data row
@@ -144,11 +144,11 @@ All filters are optional and can be combined. Multiple filters use **AND** logic
 # - To-dos CSV header + all to-do data rows (one per to-do)
 
 # Error handling - missing parameter
-./skill/things/get-project
+~/.config/opencode/skill/things/get-project
 # Output: Error: Project ID is required
 
 # Error handling - invalid ID
-./skill/things/get-project INVALID_ID
+~/.config/opencode/skill/things/get-project INVALID_ID
 # Output: execution error: Error: Project not found with ID: INVALID_ID
 ```
 
@@ -156,14 +156,14 @@ All filters are optional and can be combined. Multiple filters use **AND** logic
 
 ```bash
 # Get detailed information for a specific to-do
-./skill/things/get-todo UZW6GzhQkXWGC95L8jBGrs
+~/.config/opencode/skill/things/get-todo UZW6GzhQkXWGC95L8jBGrs
 
 # Error handling - missing parameter
-./skill/things/get-todo
+~/.config/opencode/skill/things/get-todo
 # Output: Error: To-do ID is required
 
 # Error handling - invalid ID
-./skill/things/get-todo INVALID_ID
+~/.config/opencode/skill/things/get-todo INVALID_ID
 # Output: execution error: stopme (-2700)
 ```
 
@@ -171,26 +171,26 @@ All filters are optional and can be combined. Multiple filters use **AND** logic
 
 ```bash
 # Update to-do name
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs name="Updated Name"
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs name="Updated Name"
 
 # Update to-do status
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs status=completed
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs status=completed
 
 # Update notes
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs notes="This is a note"
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs notes="This is a note"
 
 # Update multiple fields at once
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs name="New Name" status=open
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs name="New Name" status=open
 
 # Set tags (replaces all existing tags)
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs tag_names="Work; Important"
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs tag_names="Work; Important"
 
 # Error handling - no fields to update
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs
 # Output: Error: At least one field to update is required (name, status, notes, or tag_names)
 
 # Error handling - invalid status
-./skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs status=invalid
+~/.config/opencode/skill/things/set-todo UZW6GzhQkXWGC95L8jBGrs status=invalid
 # Output: Error: Invalid status 'invalid'. Must be: open, completed, or cancelled
 ```
 
