@@ -8,11 +8,100 @@ metadata:
 
 ## What I do
 
-1. Run the following shell command.
+1. Run the following shell command with optional latitude and longitude parameters.
 
 ```
-./skill/weather/get-weather
+~/.config/opencode/skill/weather/get-weather [--latitude <lat>] [--longitude <lon>]
 ```
+
+**Parameters:**
+- `--latitude <lat>` (optional): Latitude in decimal degrees (WGS84). Default: 38.9822 (Overland Park, KS)
+- `--longitude <lon>` (optional): Longitude in decimal degrees (WGS84). Default: -94.6708 (Overland Park, KS)
+
+**Examples:**
+```
+# Default location (Overland Park, Kansas)
+~/.config/opencode/skill/weather/get-weather
+
+# Specific location (Toronto, Canada)
+~/.config/opencode/skill/weather/get-weather --latitude 43.65 --longitude -79.38
+
+# New York City
+~/.config/opencode/skill/weather/get-weather --latitude 40.7128 --longitude -74.0060
+```
+
+---
+
+### Geolocation Helper Script
+
+If you don't know the latitude and longitude of a location, use the `geolocation` script to search for cities, states, or postal codes and get their coordinates.
+
+**Usage:**
+
+```
+~/.config/opencode/skill/weather/geolocation --name <search_term> [options]
+```
+
+**Required:**
+- `--name <string>`: Search term (city name, postal code, state, etc.)
+
+**Options:**
+- `--count <number>`: Number of results to return (1-100, default: 10)
+- `--language <string>`: Language code for translated results (default: en)
+- `--countryCode <string>`: ISO-3166-1 alpha2 country code filter (e.g., US, FR, DE)
+- `--format <string>`: Response format (json or protobuf, default: json)
+- `--help, -h`: Show help message
+
+**Examples:**
+
+```bash
+# Search for a city
+~/.config/opencode/skill/weather/geolocation --name "Seattle"
+
+# Search with result limit
+~/.config/opencode/skill/weather/geolocation --name "Springfield" --count 3
+
+# Search with country filter (Paris, France only)
+~/.config/opencode/skill/weather/geolocation --name "Paris" --countryCode "FR" --count 1
+
+# Search by postal/zip code
+~/.config/opencode/skill/weather/geolocation --name "10001" --countryCode "US"
+
+# Search with language preference (German)
+~/.config/opencode/skill/weather/geolocation --name "Munich" --language "de"
+```
+
+**Response Format:**
+
+The script returns JSON with an array of matching locations, each containing:
+- `id`: Unique location identifier
+- `name`: Location name
+- `latitude`: Latitude coordinate (WGS84)
+- `longitude`: Longitude coordinate (WGS84)
+- `elevation`: Elevation in meters above sea level
+- `timezone`: IANA timezone identifier
+- `country`: Country name
+- `country_code`: ISO-3166-1 alpha2 country code
+- `admin1`: First-level administrative area (state/province)
+- `admin2`: Second-level administrative area (county/district)
+- `population`: Number of inhabitants
+- `postcodes`: Array of postal codes
+
+**Typical Workflow:**
+
+1. Use `geolocation` to find coordinates:
+   ```bash
+   ~/.config/opencode/skill/weather/geolocation --name "Tokyo" --countryCode "JP" --count 1
+   ```
+
+2. Extract latitude and longitude from the JSON response
+
+3. Use coordinates with `get-weather`:
+   ```bash
+   ~/.config/opencode/skill/weather/get-weather --latitude 35.6895 --longitude 139.69171
+   ```
+
+---
 
 2. Return the current weather information in the following format:
 
@@ -105,4 +194,8 @@ Each line MUST be exactly 76 characters between the ║ characters. Use padding 
 
 ## When to use me
 
-Use me to get the current weather around Overland Park, Kansas.
+Use me to get weather information for any location worldwide. You can:
+- Provide latitude and longitude coordinates directly with `get-weather`
+- Use the `geolocation` helper script to search for locations by city name, state, or postal code
+- Call `get-weather` without parameters to get weather for the default location (Overland Park, Kansas)
+

@@ -1,0 +1,94 @@
+#!/usr/bin/env bun
+
+// Parse command-line arguments manually
+const args = process.argv.slice(2);
+let name: string | undefined;
+let count = 10;
+let language = "en";
+let countryCode: string | undefined;
+let format = "json";
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--name' && i + 1 < args.length) {
+    name = args[i + 1];
+    i++;
+  } else if (args[i] === '--count' && i + 1 < args.length) {
+    count = parseInt(args[i + 1]);
+    i++;
+  } else if (args[i] === '--language' && i + 1 < args.length) {
+    language = args[i + 1];
+    i++;
+  } else if (args[i] === '--countryCode' && i + 1 < args.length) {
+    countryCode = args[i + 1];
+    i++;
+  } else if (args[i] === '--format' && i + 1 < args.length) {
+    format = args[i + 1];
+    i++;
+  } else if (args[i] === '--help' || args[i] === '-h') {
+    console.log(`
+Usage: geolocation --name <search_term> [options]
+
+Required:
+  --name <string>        Search term (city name, postal code, etc.)
+
+Options:
+  --count <number>       Number of results to return (1-100, default: 10)
+  --language <string>    Language code for translated results (default: en)
+  --countryCode <string> ISO-3166-1 alpha2 country code filter
+  --format <string>      Response format (json or protobuf, default: json)
+  --help, -h             Show this help message
+
+Examples:
+  geolocation --name "Seattle"
+  geolocation --name "Paris" --countryCode "FR" --count 1
+  geolocation --name "94110" --countryCode "US"
+`);
+    process.exit(0);
+  }
+}
+
+// Validate required parameters
+if (!name) {
+  console.error("Error: --name is required");
+  console.error("Use --help for usage information");
+  process.exit(1);
+}
+
+// Validate count parameter
+if (count < 1 || count > 100) {
+  console.error("Error: count must be between 1 and 100");
+  process.exit(1);
+}
+
+// Build the API URL
+const params = new URLSearchParams({
+  name: name,
+  count: count.toString(),
+  language: language,
+  format: format,
+});
+
+// Add optional country code if provided
+if (countryCode) {
+  params.append("country_code", countryCode);
+}
+
+const url = `https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`;
+
+try {
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    console.error(`Error: HTTP ${response.status} ${response.statusText}`);
+    process.exit(1);
+  }
+
+  const data = await response.json();
+  
+  // Pretty print the JSON response
+  console.log(JSON.stringify(data, null, 2));
+  
+} catch (error) {
+  console.error("Error fetching geocoding data:", error);
+  process.exit(1);
+}

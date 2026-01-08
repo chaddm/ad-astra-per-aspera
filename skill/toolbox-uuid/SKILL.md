@@ -11,7 +11,7 @@ metadata:
 Run the following command to generate a UUID:
 
 ```
-./skill/toolbox-uuid/get-uuid
+~/.config/opencode/skill/toolbox-uuid/get-uuid
 ```
 
 ## When to use me

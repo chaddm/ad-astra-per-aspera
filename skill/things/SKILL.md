@@ -1,6 +1,8 @@
 ---
 name: Things3
-description: Interact with Things3 task management application to retrieve areas and projects with filtering capabilities.
+description:
+  Interact with Things3 task management application to retrieve areas and projects
+  with filtering capabilities.
 license: MIT
 compatibility: opencode
 metadata:
@@ -8,7 +10,8 @@ metadata:
 
 ## What I do
 
-This skill provides scripts to interact with Things3 (task management application) and retrieve data in CSV format.
+This skill provides scripts to interact with Things3 (task management application)
+and retrieve data in CSV format.
 
 ### Available Scripts
 
@@ -24,7 +27,8 @@ This skill provides scripts to interact with Things3 (task management applicatio
 ~/.config/opencode/skill/things/get-projects [ids=id1,id2] [name=searchterm] [area_ids=aid1,aid2] [tags=tag1,tag2]
 ```
 
-**Get Project** - Retrieve detailed information for a single project by ID, including all to-dos/items within the project.
+**Get Project** - Retrieve detailed information for a single project by ID, including
+all to-dos/items within the project.
 
 ```bash
 ~/.config/opencode/skill/things/get-project <project_id>
@@ -44,20 +48,23 @@ This skill provides scripts to interact with Things3 (task management applicatio
 
 ## When to use me
 
-Use me when you need to work with the Things3 Tasks application (aka Things). This skill allows you to interact with Things3 to retrieve and filter your areas and projects.
+Use me when you need to work with the Things3 Tasks application (aka Things). This
+skill allows you to interact with Things3 to retrieve and filter your areas and
+projects.
 
 ## Filter Options
 
-All filters are optional and can be combined. Multiple filters use **AND** logic (must match all), while values within a filter use **OR** logic (match any).
+All filters are optional and can be combined. Multiple filters use **AND** logic
+(must match all), while values within a filter use **OR** logic (match any).
 
 ### get-areas Filters
 
 - **`ids`** - Comma-delimited area IDs (whitespace trimmed)
   - Example: `ids=RnYsrXCAB2VZCvqkKBeVty` or `ids="id1, id2, id3"`
-  
+
 - **`name`** - Case-insensitive substring search in area name
   - Example: `name=work` or `name="Personal Projects"`
-  
+
 - **`tags`** - Comma-delimited tag names (whitespace trimmed, exact match)
   - Example: `tags="Work: Provider Nexus"` or `tags="tag1, tag2"`
 
@@ -65,26 +72,30 @@ All filters are optional and can be combined. Multiple filters use **AND** logic
 
 - **`ids`** - Comma-delimited project IDs (whitespace trimmed)
   - Example: `ids=2SwCCY2WDAKqksu6oufbwb` or `ids="id1, id2, id3"`
-  
+
 - **`name`** - Case-insensitive substring search in project name
   - Example: `name=camera` or `name="ops prime"`
-  
+
 - **`area_ids`** - Comma-delimited area IDs (whitespace trimmed)
   - Example: `area_ids=K9U3dAEXnchmJTTCQLput5` or `area_ids="aid1, aid2"`
-  
+
 - **`tags`** - Comma-delimited tag names (whitespace trimmed, exact match)
   - Example: `tags="Important"` or `tags="tag1, tag2"`
 
 ### set-todo Parameters
 
 **Required:**
+
 - **`<todo_id>`** - The to-do ID (first positional argument)
 
 **Optional (at least one required):**
+
 - **`name="new name"`** - Update the to-do name
-- **`status=open|completed|cancelled`** - Update status (must be one of these three values)
+- **`status=open|completed|cancelled`** - Update status (must be one of these three
+  values)
 - **`notes="note text"`** - Update notes
-- **`tag_names="tag1; tag2; tag3"`** - Set tags (semicolon-separated, replaces all existing tags)
+- **`tag_names="tag1; tag2; tag3"`** - Set tags (semicolon-separated, replaces all
+  existing tags)
 
 ## Examples
 
@@ -224,14 +235,15 @@ All scripts return CSV format with headers.
 
 Returns two CSV sections separated by a blank line:
 
-**Project Section (14 columns):**
-All fields from get-projects plus:
+**Project Section (14 columns):** All fields from get-projects plus:
+
 - `notes` - Project notes (included in get-project, excluded from get-projects)
 - `activation_date` - When project was activated
 - `cancellation_date` - When project was cancelled (if cancelled)
 - `contact` - Associated contact (if any)
 
 **To-dos Section (9 columns):**
+
 - `id` - To-do unique identifier
 - `name` - To-do name/title
 - `status` - To-do status (open/completed/cancelled)
@@ -258,7 +270,8 @@ Same as the to-dos section in get-project output:
 
 ### set-todo Output
 
-After successful update, returns the same CSV format as get-todo (header + single row with the updated to-do).
+After successful update, returns the same CSV format as get-todo (header + single row
+with the updated to-do).
 
 ## Notes
 
@@ -267,4 +280,3 @@ After successful update, returns the same CSV format as get-todo (header + singl
 - Multiple values in a single filter are OR'ed (match any)
 - Multiple different filters are AND'ed (match all)
 - Emoji in names are supported
-

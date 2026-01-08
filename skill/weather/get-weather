@@ -2,9 +2,24 @@
 
 import { fetchWeatherApi } from "openmeteo";
 
+// Parse command-line arguments manually
+const args = process.argv.slice(2);
+let latitude = 38.9822;
+let longitude = -94.6708;
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--latitude' && i + 1 < args.length) {
+    latitude = parseFloat(args[i + 1]);
+    i++;
+  } else if (args[i] === '--longitude' && i + 1 < args.length) {
+    longitude = parseFloat(args[i + 1]);
+    i++;
+  }
+}
+
 const params = {
-  latitude: 38.9822,
-  longitude: -94.6708,
+  latitude: latitude,
+  longitude: longitude,
   hourly: [
     "temperature_2m",
     "relative_humidity_2m",
@@ -39,8 +54,8 @@ const responses = await fetchWeatherApi(url, params);
 const response = responses[0];
 
 // Attributes for timezone and location
-const latitude = response.latitude();
-const longitude = response.longitude();
+const responseLatitude = response.latitude();
+const responseLongitude = response.longitude();
 const elevation = response.elevation();
 const timezone = response.timezone();
 const timezoneAbbreviation = response.timezoneAbbreviation();
@@ -170,7 +185,7 @@ const title = "WEATHER FORECAST";
 const titlePadding = Math.floor((76 - title.length) / 2);
 console.log("║" + " ".repeat(titlePadding) + title + " ".repeat(76 - titlePadding - title.length) + "║");
 console.log("╠" + "═".repeat(76) + "╣");
-console.log("║" + padLine(`Location: ${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`) + "║");
+console.log("║" + padLine(`Location: ${responseLatitude.toFixed(2)}°N, ${responseLongitude.toFixed(2)}°E`) + "║");
 console.log("║" + padLine(`Elevation: ${elevation}m asl`) + "║");
 console.log("║" + padLine(`Timezone: ${timezone} (${timezoneAbbreviation})`) + "║");
 console.log("╠" + "═".repeat(76) + "╣");
