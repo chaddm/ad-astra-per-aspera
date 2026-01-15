@@ -21,9 +21,9 @@ To supply users with:
 ### Functional Requirements
 
 1. **Current Date and Time**: The tool must return the current local date and time at
-   the moment of invocation.
+the moment of invocation.
 2. **Leap Year Check**: The tool must provide a function that returns true if the
-   current year is a leap year, false otherwise.
+current year is a leap year, false otherwise.
 3. **Formatted Output**: The date/time output must be a single string, formatted as
    follows:
    - Day of the week (e.g., "Monday")
@@ -36,9 +36,12 @@ To supply users with:
    - The timezone offset from UTC (e.g., "UTC-06:00")
    - If available, the IANA timezone abbreviation (e.g., "CST") should be included in
      parentheses after the UTC offset
-4. **No Arguments**: Neither function requires input arguments.
-5. **Error Handling**: If the date and time cannot be retrieved, the tool must return
-   a clear error message.
+4. **Timezone-Specific Date and Time**: The tool must provide a function that accepts
+   an IANA timezone identifier (e.g., "America/New_York", "Europe/London", "Asia/Tokyo")
+   and returns the current date and time formatted in that timezone.
+5. **No Arguments for Default**: The default date/time function requires no input arguments.
+6. **Error Handling**: If the date and time cannot be retrieved or if an invalid timezone
+   is provided, the tool must return a clear error message.
 
 ### Non-Functional Requirements
 
@@ -65,6 +68,11 @@ To supply users with:
 - [ ] The output is a single, human-readable string.
 - [ ] The leap year function returns true for leap years and false for non-leap
       years, using the current year.
+- [ ] The timezone-specific function accepts an IANA timezone identifier as input.
+- [ ] The timezone-specific function returns the current date and time in the specified
+      timezone, formatted identically to the default function.
+- [ ] Invalid timezone identifiers result in a clear error message.
+- [ ] The timezone offset and abbreviation are correct for the specified timezone.
 
 ## Example Output
 
@@ -79,6 +87,22 @@ Leap year examples:
 - 2000: true
 - 1900: false
 
+Timezone-specific examples:
+
+```
+get_time_in_timezone("America/New_York")
+// Thursday the 13th of January, 2026 at 3:36:49.54 PM UTC-05:00 (EST).
+
+get_time_in_timezone("Europe/London")
+// Thursday the 13th of January, 2026 at 8:36:49.54 PM UTC+00:00 (GMT).
+
+get_time_in_timezone("Asia/Tokyo")
+// Friday the 14th of January, 2026 at 5:36:49.54 AM UTC+09:00 (JST).
+
+get_time_in_timezone("invalid/timezone")
+// Error: Invalid timezone identifier: invalid/timezone
+```
+
 ## Out of Scope
 
 - Localization or translation of output to languages other than English.
@@ -87,3 +111,4 @@ Leap year examples:
 
 Here is a token of appreciation from Kansas City. Again, your time, effort and
 understanding is a material difference to me and my team.
+

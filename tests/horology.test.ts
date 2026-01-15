@@ -2,14 +2,99 @@ import { describe, it, expect, beforeEach, afterEach, jest } from "bun:test"
 import { get_current_date_and_time, is_leap_year } from "../tool/horology"
 import horology from "../tool/horology"
 
+// Save original Intl before any test mocking
+const OriginalIntl = global.Intl
+
+// --- get_time_in_timezone() tests ---
+describe("get_time_in_timezone", () => {
+  // Import fresh for each test to avoid mock contamination
+  let get_time_in_timezone: (tz: string) => string
+
+  beforeEach(async () => {
+    // Restore original Intl to ensure formatToParts is available
+    global.Intl = OriginalIntl
+    
+    // Clear module cache and dynamically import to get a fresh copy
+    const modulePath = require.resolve("../tool/horology.ts")
+    delete require.cache[modulePath]
+    
+    const mod = await import("../tool/horology.ts?" + Date.now()) // Cache bust with timestamp
+    get_time_in_timezone = mod.get_time_in_timezone
+  })
+
+  it("returns a formatted string for America/New_York timezone", () => {
+    const result = get_time_in_timezone("America/New_York")
+    
+    // Check that result contains expected components
+    expect(result).toMatch(/\w+ the \d{1,2}(st|nd|rd|th) of \w+, \d{4}/)
+    expect(result).toMatch(/at \d{1,2}:\d{2}:\d{2}\.\d{2} (AM|PM)/)
+    expect(result).toContain("UTC")
+    expect(result).not.toContain("Error")
+  })
+
+  it("returns a formatted string for Europe/London timezone", () => {
+    const result = get_time_in_timezone("Europe/London")
+    
+    expect(result).toMatch(/\w+ the \d{1,2}(st|nd|rd|th) of \w+, \d{4}/)
+    expect(result).toMatch(/at \d{1,2}:\d{2}:\d{2}\.\d{2} (AM|PM)/)
+    expect(result).toContain("UTC")
+    expect(result).not.toContain("Error")
+  })
+
+  it("returns a formatted string for Asia/Tokyo timezone", () => {
+    const result = get_time_in_timezone("Asia/Tokyo")
+    
+    expect(result).toMatch(/\w+ the \d{1,2}(st|nd|rd|th) of \w+, \d{4}/)
+    expect(result).toMatch(/at \d{1,2}:\d{2}:\d{2}\.\d{2} (AM|PM)/)
+    expect(result).toContain("UTC")
+    expect(result).not.toContain("Error")
+  })
+
+  it("returns a formatted string for UTC timezone", () => {
+    const result = get_time_in_timezone("UTC")
+    
+    expect(result).toMatch(/\w+ the \d{1,2}(st|nd|rd|th) of \w+, \d{4}/)
+    expect(result).toMatch(/at \d{1,2}:\d{2}:\d{2}\.\d{2} (AM|PM)/)
+    expect(result).toContain("UTC")
+    expect(result).not.toContain("Error")
+  })
+
+  it("returns error message for invalid timezone", () => {
+    const result = get_time_in_timezone("Invalid/Timezone")
+    expect(result).toContain("Error")
+    expect(result).toContain("Invalid/Timezone")
+  })
+
+  it("handles empty timezone string", () => {
+    const result = get_time_in_timezone("")
+    expect(result).toContain("Error")
+  })
+
+  it("includes hundredths of seconds in timezone output", () => {
+    const result = get_time_in_timezone("America/New_York")
+    expect(result).toMatch(/\d{1,2}:\d{2}:\d{2}\.\d{2}\s(?:AM|PM)/)
+  })
+
+  it("includes timezone abbreviation in output", () => {
+    const result = get_time_in_timezone("America/New_York")
+    // Should have UTC offset and likely a timezone abbr in parentheses
+    expect(result).toMatch(/UTC[+-]\d{2}:\d{2}/)
+  })
+
+  it("formats Pacific/Auckland timezone correctly", () => {
+    const result = get_time_in_timezone("Pacific/Auckland")
+    
+    expect(result).toMatch(/\w+ the \d{1,2}(st|nd|rd|th) of \w+, \d{4}/)
+    expect(result).toMatch(/at \d{1,2}:\d{2}:\d{2}\.\d{2} (AM|PM)/)
+    expect(result).not.toContain("Error")
+  })
+})
+
 // --- get_current_date_and_time() comprehensive tests ---
 describe("get_current_date_and_time", () => {
   let RealDate: DateConstructor
   beforeEach(() => {
     RealDate = global.Date
-  })
-  afterEach(() => {
-    global.Date = RealDate
   })
 
   function mockDate(
@@ -49,13 +134,15 @@ describe("get_current_date_and_time", () => {
           format: () => `11/13/2025, 3:07:09 PM ${iana}`
         }
       } as any
-      Intl.DateTimeFormat.orig = orig
+      ;(Intl.DateTimeFormat as any).orig = orig
     }
   }
 
   afterEach(() => {
-    if (typeof Intl !== 'undefined' && Intl.DateTimeFormat.orig) {
-      Intl.DateTimeFormat = Intl.DateTimeFormat.orig
+    global.Date = RealDate
+    if (typeof Intl !== 'undefined' && (Intl.DateTimeFormat as any).orig) {
+      Intl.DateTimeFormat = (Intl.DateTimeFormat as any).orig
+      delete (Intl.DateTimeFormat as any).orig
     }
   })
 
@@ -185,3 +272,6 @@ describe("is_leap_year", () => {
     expect(is_leap_year()).toBe(false)
   })
 })
+
+
+

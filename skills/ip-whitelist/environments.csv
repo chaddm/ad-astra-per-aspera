@@ -1,0 +1,6 @@
+environment,base_url
+localhost,http://localhost:5001
+staging,https://staging.providernexus.com
+upgrade,https://upgrade.providernexus.com
+production,https://providernexus.com
+sandbox,https://sandbox.providernexus.com
