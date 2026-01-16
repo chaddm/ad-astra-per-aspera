@@ -14,6 +14,7 @@ permission:
   patch: deny
   todowrite: allow
   tools: allow
+  external_directory: allow
 ---
 
 # OpenCode Agent Build Guide
