@@ -1,5 +1,8 @@
 ---
 description: Performs web research using DuckDuckGo and coordinates page fetching
+purpose:
+  when-to-call: "When you need to perform web research using DuckDuckGo and coordinate parallel page fetching"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.4

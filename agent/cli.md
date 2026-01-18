@@ -1,5 +1,8 @@
 ---
 description: CLI agent with all permissions
+purpose:
+  when-to-call: "When you need to execute command-line interface operations with full permissions"
+  active: true
 type: subagent
 mode: subagent
 model: github-copilot/gpt-4o

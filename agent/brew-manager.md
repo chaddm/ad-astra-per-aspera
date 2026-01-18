@@ -1,5 +1,8 @@
 ---
 description: "Manages Homebrew package manager operations on macOS"
+purpose:
+  when-to-call: "When you need to manage Homebrew package manager operations on macOS"
+  active: true
 mode: "subagent"
 model: "github-copilot/gpt-4o"
 temperature: 0.1
@@ -257,3 +260,4 @@ You know how to:
      the `~/.brew` file with this list, ensuring it reflects only explicitly
      installed packages.
    - Return a summary of the installation result.
+

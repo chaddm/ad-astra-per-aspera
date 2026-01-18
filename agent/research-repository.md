@@ -1,5 +1,8 @@
 ---
 description: Researches the codebase by coordinating file search and analysis
+purpose:
+  when-to-call: "When you need to perform codebase research, search operations, find usages, or trace execution paths"
+  active: true
 mode: subagent
 model-hold: github-copilot/claude-sonnet-4
 model: github-copilot/gpt-4.1

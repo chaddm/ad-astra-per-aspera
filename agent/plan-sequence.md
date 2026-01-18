@@ -1,5 +1,8 @@
 ---
 description: Given a plan, returns a markdown list of sequential actions by calling the sequential-thinking MCP.
+purpose:
+  when-to-call: "When you need to break down plans into actionable, sequential steps"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:

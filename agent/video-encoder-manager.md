@@ -1,5 +1,8 @@
 ---
 description: Executes ffmpeg commands for video and audio processing
+purpose:
+  when-to-call: "When you need to handle video and audio processing tasks using ffmpeg, including format conversion, compression, and extraction"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:

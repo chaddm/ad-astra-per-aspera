@@ -1,6 +1,9 @@
 ---
 description:
   Given a prompt, creates a plan and returns a markdown list of sequential actions.
+purpose:
+  when-to-call: "When you need to decompose prompts into plans and sequences of actions"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:

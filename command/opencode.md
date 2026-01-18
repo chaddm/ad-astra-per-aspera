@@ -39,8 +39,8 @@ steps:
    ## Opencode
 
    This project is configured to use the `opencode` editor with custom agents,
-   commands, tools, and themes. Immediately read
-   `~/.config/opencode/docs/opencode/available-agents.md`
+   commands, tools, and themes. Use the skill `opencode-get-subagents` to get a
+   list of available subagents and their purposes.
    ```
 
 ## Agent Configuration

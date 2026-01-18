@@ -1,5 +1,8 @@
 ---
 description: Fetches and analyzes webpage content
+purpose:
+  when-to-call: "When you need to fetch and analyze specific webpage content, returning markdown with front-matter"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:
@@ -45,3 +48,4 @@ Instructions:
   - Ensure that the directory for the file path exists, creating it if necessary with
     `mkdir -p`.
   - Write the markdown content to the specified file path.
+

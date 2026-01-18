@@ -1,5 +1,8 @@
 ---
 description: Reviews code for quality and best practices
+purpose:
+  when-to-call: "When you need to review code for quality, best practices, security issues, or performance concerns without making direct changes"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 temperature: 0.1

@@ -6,8 +6,13 @@
 
 Tools allow the LLM to perform actions in your codebase. OpenCode comes with a set of
 built-in tools, but you can extend it with custom tools or MCP servers. By default,
-all tools are **enabled** and don’t need permission to run. But you can configure
+all tools are **enabled** and don't need permission to run. But you can configure
 this and control the permissions through your config.
+
+**Note:** As of OpenCode v1.1.1, the legacy `tools` configuration (using `true`/`false`)
+has been deprecated and merged into the `permission` system. The `permission` system
+provides finer-grained control with three levels: `"allow"`, `"ask"`, and `"deny"`.
+This documentation reflects the current `permission`-based configuration.
 
 IMPORTANT: _Tools_ is not to be confused with _custom tools_. Custom tools are
 user-defined TypeScript modules that appear as additional tools along side of the
@@ -17,35 +22,39 @@ built-in tools.
 
 ## Configure
 
-You can configure tools globally or per agent. Agent-specific configs override global
-settings. By default, all tools are set to `true`. To disable a tool, set it to
-`false`.
+You can configure tool permissions globally or per agent. Agent-specific configs override
+global settings. By default, all tools are set to `"allow"`. To change permissions, set
+them to one of three values:
+
+- `"allow"` — Allow without approval
+- `"ask"` — Prompt for approval before execution
+- `"deny"` — Deny access without approval
 
 ---
 
 ### Global
 
-Disable or enable tools globally using the `tools` option.
+Control tool permissions globally using the `permission` option.
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "write": false,
-    "bash": false,
-    "webfetch": true
+  "permission": {
+    "write": "deny",
+    "bash": "deny",
+    "webfetch": "allow"
   }
 }
 ```
 
-You can also use wildcards to control multiple tools at once. For example, to disable
+You can also use wildcards to control multiple tools at once. For example, to deny
 all tools from an MCP server:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "mymcp_*": false
+  "permission": {
+    "mymcp_*": "deny"
   }
 }
 ```
@@ -54,45 +63,45 @@ all tools from an MCP server:
 
 ### Per agent
 
-Override global tool settings for specific agents using the `tools` config in the
-agent definition.
+Override global permission settings for specific agents using the `permission` config in
+the agent definition.
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "write": true,
-    "bash": true
+  "permission": {
+    "write": "allow",
+    "bash": "allow"
   },
   "agent": {
     "plan": {
-      "tools": {
-        "write": false,
-        "bash": false
+      "permission": {
+        "write": "deny",
+        "bash": "deny"
       }
     }
   }
 }
 ```
 
-For example, here the `plan` agent overrides the global config to disable `write` and
-`bash` tools.
+For example, here the `plan` agent overrides the global config to deny `write` and
+`bash` permissions.
 
-You can also configure tools for agents in Markdown:
+You can also configure permissions for agents in Markdown:
 
 ```yaml
 ---
 description: Read-only analysis agent
 mode: subagent
-tools:
-  write: false
-  edit: false
-  bash: false
+permission:
+  write: deny
+  edit: deny
+  bash: deny
 ---
 Analyze code without making any modifications.
 ```
 
-Learn more about configuring tools per agent in the agents documentation.
+Learn more about configuring permissions per agent in the agents documentation.
 
 ---
 
@@ -109,8 +118,8 @@ Execute shell commands in your project environment.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "bash": true
+  "permission": {
+    "bash": "allow"
   }
 }
 ```
@@ -127,13 +136,13 @@ Modify existing files using exact string replacements.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "edit": true
+  "permission": {
+    "edit": "allow"
   }
 }
 ```
 
-This tool performs precise edits to files by replacing exact text matches. It’s the
+This tool performs precise edits to files by replacing exact text matches. It's the
 primary way the LLM modifies code.
 
 ---
@@ -145,8 +154,8 @@ Create new files or overwrite existing ones.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "write": true
+  "permission": {
+    "write": "allow"
   }
 }
 ```
@@ -163,8 +172,8 @@ Read file contents from your codebase.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "read": true
+  "permission": {
+    "read": "allow"
   }
 }
 ```
@@ -181,8 +190,8 @@ Search file contents using regular expressions.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "grep": true
+  "permission": {
+    "grep": "allow"
   }
 }
 ```
@@ -199,8 +208,8 @@ Find files by pattern matching.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "glob": true
+  "permission": {
+    "glob": "allow"
   }
 }
 ```
@@ -217,8 +226,8 @@ List files and directories in a given path.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "list": true
+  "permission": {
+    "list": "allow"
   }
 }
 ```
@@ -234,8 +243,8 @@ Apply patches to files.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "patch": true
+  "permission": {
+    "patch": "allow"
   }
 }
 ```
@@ -252,8 +261,8 @@ Manage todo lists during coding sessions.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "todowrite": true
+  "permission": {
+    "todowrite": "allow"
   }
 }
 ```
@@ -270,8 +279,8 @@ Read existing todo lists.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "todoread": true
+  "permission": {
+    "todoread": "allow"
   }
 }
 ```
@@ -288,8 +297,8 @@ Fetch web content.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "webfetch": true
+  "permission": {
+    "webfetch": "allow"
   }
 }
 ```
@@ -306,8 +315,8 @@ Provides time-related functionality with human-readable formatted output.
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "tools": {
-    "horology": true
+  "permission": {
+    "horology": "allow"
   }
 }
 ```
@@ -361,4 +370,4 @@ project root. This file can explicitly allow certain paths.
 ```
 
 For example, this `.ignore` file allows ripgrep to search within `node_modules/`,
-`dist/`, and `build/` directories even if they’re listed in `.gitignore`.
+`dist/`, and `build/` directories even if they're listed in `.gitignore`.

@@ -1,5 +1,8 @@
 ---
-description: Project orchestrator that delegates tasks to specialized subagents.
+description: Provides answers by delegating to specialized subagents
+purpose:
+  when-to-call: "When you need to ask questions or get information from the user interactively"
+  active: true
 mode: primary
 model: github-copilot/claude-sonnet-4.5
 temperature: 0.1
@@ -91,3 +94,4 @@ specifically to use the agent:
 - Use @web-fetch for retrieving specific webpage content
 - Coordinate multiple subagents when tasks require different expertise
 - Focus on the big picture and ensure all pieces come together coherently
+

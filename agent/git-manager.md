@@ -1,5 +1,8 @@
 ---
 description: Executes git commands as a non-interactive git expert
+purpose:
+  when-to-call: "When you need to manage git repositories, including cloning, branching, committing, and pushing changes"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:

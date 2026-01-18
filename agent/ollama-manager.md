@@ -1,5 +1,8 @@
 ---
-description: Model Context Protocol (MCP) configuration manager and curator
+description: Manages Ollama models including downloading, deleting, and creating custom configurations
+purpose:
+  when-to-call: "When you need to manage Ollama models, including downloading models, deleting models, and creating custom configurations"
+  active: true
 mode: primary
 model: github-copilot/gpt-4.1
 temperature: 0.1
@@ -82,3 +85,4 @@ Creating a custom model...
 Progress: [##########] 100%
 Custom model created successfully! You can now use it locally or push it to a registry.
 ```
+

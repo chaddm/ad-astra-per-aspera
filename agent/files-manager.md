@@ -2,6 +2,9 @@
 description:
   Operates on files and directories within the project based on provided
   instructions.  Cannot execute shell scripts.
+purpose:
+  when-to-call: "When you need to create, modify, or delete files and directories within the project"
+  active: true
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:
