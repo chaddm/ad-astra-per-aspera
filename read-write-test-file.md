@@ -1,0 +1,10 @@
+Patched content
+Line 2
+Line 3
+Line 4
+Line 5 - replaced
+Line 6
+Line 7
+Line 8
+Line 9
+Line 1 - changed0
