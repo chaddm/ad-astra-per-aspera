@@ -30,7 +30,7 @@ information.
 **Commands** are custom instructions for specific tasks that can be invoked by the
 user with a slash (ie `/my-command`). Commands are defined by markdown files in the
 `command/` directory. Information on creating commands is found in
-`docs/opencode/commands.md`.
+docs/opencode/commands.md`.
 
 **Custom Tools** are JavaScript/TypeScript functions that can be invoked by agents to
 perform programmatic tasks. Custom tools are defined in the `tool/` directory.
@@ -40,7 +40,7 @@ for use in custom tools.
 
 **Themes** define the appearance of OpenCode in the terminal. Themes are defined in
 the `themes/` directory. Information on selecting or creating themes is found in
-`docs/opencode/themes.md`.
+docs/opencode/themes.md`.
 
 **Technical Documentation** is provided in the `docs/` directory. This includes
 technical documentation for being able to develop agents, commands, and tools. When
@@ -66,7 +66,7 @@ Notable directories are:
 - `docs/mcps/`: Directory containing documentation related to Model Context Protocol
   (MCP) servers, including setup guides and usage instructions for integrating
 
-## Specific Purpose Agents
+## Subagents
 
 The following agents are specifically defined for particular tasks and have
 instructions for their use cases. Delegate tasks to these agents when appropriate.
@@ -79,39 +79,40 @@ from the agent if you are unsure how to phrase your request.
 
 #### Code & Repository Management
 
-- **@opencode**: Modifies `.opencode` configuration files (both per-project and
-  global).
+- **@files-manager**: Operates on files and directories within the project based on
+  provided instructions. Cannot execute shell scripts.
+  - See below.
 - **@review**: Reviews code for quality and best practices (read-only, no direct
   changes).
+- ## **@git-manager**: Executes git commands as a non-interactive git expert.
 
 #### Research & Analysis
 
-- **@research-repository**: Performs codebase research and search operations.
-- **@files-read**: Analyzes file contents, provides summaries, documents code, and
-  extracts sections.
-- **@deep-build**: Fully autonomous; plans and executes prompts end-to-end with no
-  user interaction.
-- **@plan-sequence**: Breaks down plans into actionable, sequential steps.
-- **@plan-tractacus**: Decomposes prompts into plans and sequences using
-  tractatus-thinking.
+- **@research-repository**: Researches the codebase by coordinating file search and
+  analysis.
+- **@plan-sequence**: Given a plan, returns a markdown list of sequential actions by
+  calling the sequential-thinking MCP.
+- **@plan-goals**: Given a prompt, creates a plan and returns a markdown list of
+  sequential actions.
 
 #### Web & External Resources
 
-- **@web-search**: Performs web research using DuckDuckGo and coordinates parallel
-  page fetching.
-- **@web-fetch**: Fetches and analyzes specific webpage content. Returns a markdown
-  version of the webpage with front-matter.
+- **@web-search**: Performs web research using DuckDuckGo and coordinates page
+  fetching.
+- **@web-fetch**: Fetches and analyzes webpage content. Returns a markdown version of
+  the webpage with front-matter.
 
-#### Development Tools
+#### System & Package Management
 
-- **ffmpeg**: Handles video and audio processing tasks using ffmpeg, including format
-  conversion, compression, and extraction.
-- **git**: Manages git repositories, including cloning, branching, committing, and
-  pushing changes.
-- **@mcp-builder**: Builds and manages MCP (Model Context Protocol) servers and
-  integrations.
-- **ollama**: Manages the host's Ollama models, including downloading models,
-  deleting models, and creating custom configurations.
+- **@brew-manager**: Manages Homebrew package manager operations on macOS.
+- **@video-encoder-manager**: Executes ffmpeg commands for video and audio
+  processing.
+
+#### Model & Service Management
+
+- **@ollama-manager**: Manages Ollama models including downloading, deleting, and
+  creating custom configurations.
+- **@mcp-manager**: Model Context Protocol (MCP) configuration manager and curator.
 
 ---
 
@@ -124,10 +125,94 @@ example:
 @ollama Download and set up the llama2 model
 ```
 
-If you need more details about a specific agent or want to see usage examples, refer
-to `docs/opencode/agents.md` or ask for more information.
+### Using the files-manager agent
 
-### Available Documentation
+The files-manager agent can be used to perform shell commands and file editing
+functions.
+
+> Important
+>
+> - Give only one command or file operation per delegation.
+> - Give the agent instructions in the correct format for these operations to work
+>   correctly.
+
+**Shell Commands** - It can be passed exact commands for the following shell
+commands: pwd, rm, chmod, chown, cp, file, mkdir, rmdir, and mv. When passing shell
+commands, give the exact shell command.
+
+Example: `mkdir -p foo/bar/baz`
+
+**File Editing**
+
+When using the files-manager to read/write file contents, use the following formats
+for instructions. Never use more than one action at a time in the instructions.
+
+1. Read file
+
+Read all or part of a file. Useful finding parts of a file, by criteria.
+
+Selection (optional): Return a subset of the rows from the file. All numbers 1-based.
+
+- (Offset and Limit) or (Start Row and End Row). Line Number (optiona): Return line
+  numbers with rows.
+
+Examples:
+
+```
+Goal: Read file file and return markdown section label "Notes".
+Filename: relative/path/to/file.md
+Line numbers: true
+```
+
+```
+Goal: Read file file and return selected rows.
+Filename: relative/path/to/file.md
+Offset: 9
+Limit: 5
+Line numbers: true
+```
+
+2. String Replacement
+
+Find a specific string and replace the contents. Always read a file immediately
+before making changes to validate row numbers.
+
+```
+Goal: Read file and replace string following colon with new contents after colon.  Strings are `\` escaped. Validate the file was updated.
+Filename: relative/path/to/file.
+All Occurrences: true
+Current:<Exact string with no leading space and change returns to `\n`>
+New:<Exact string with no leading space and change returns to `\n`>
+```
+
+3. Patch file
+
+Provide a set of one or more row groups with new contents. Always read a file
+immediately before making changes to validate row numbers.
+
+```
+Goal: Read file. From the following list of changes, generate a patch file and apply it.  Strings are `\` escaped.  Validate that the patch was applied.
+Filename: <full relative or absolute path to file>
+- Start: 9
+  End: 12
+  New Contents:<Exact string with no leading space and change returns to `\n`>
+- Start: 40
+  End: 40
+  New Contents:<Exact string with no leading space and change returns to `\n`>
+```
+
+3. Replace file
+
+Staring and ending lines are 1 based. Example:
+
+```
+Goal: Read the file then replace the contents file with what follows after the the `New Content:` line.  Validate that update was successfully written.
+Filename: <full relative or absolute path to file>
+New Contents:
+<New contents without a trailing new line>
+```
+
+## Available Documentation
 
 This section provides a quick reference to the technical documentation available in
 the `./docs/opencode` directory.

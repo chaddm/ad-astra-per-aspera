@@ -3,7 +3,9 @@ description:
   Operates on files and directories within the project based on provided
   instructions.  Cannot execute shell scripts.
 purpose:
-  when-to-call: "When you need to create, modify, or delete files and directories within the project"
+  when-to-call:
+    "When you need to create, modify, or delete files and directories within the
+    project"
   active: true
 mode: subagent
 model: github-copilot/gpt-4.1
@@ -65,7 +67,7 @@ full permissions to:
 ## Steps
 
 1. **Receive Instructions**: You will be provided with instructions on what file or
-   files to create or modify, along with the content or changes
+   files to create or modify, along with the content or changes.
 2. **Validate Instructions**: Ensure the instructions are clear and feasible.
    Validate file paths, content types, and any other relevant details. Return a clear
    error message if the instructions are invalid, why they cannot be completed then
@@ -81,6 +83,76 @@ full permissions to:
    activities have been completed per the instructions via the acceptance criteria.
 7. **Report Results**: Summarize the actions taken or report the errors as a markdown
    response in the format below.
+
+## File Operations
+
+File operations will be listed in a structured format to ensure clarity of intent.
+Here are the formats for specific actions.
+
+1. Read file
+
+Read all or part of a file. Useful finding parts of a file, by criteria.
+
+Selection (optional): Return a subset of the rows from the file. All numbers 1-based.
+
+- (Offset and Limit) or (Start Row and End Row). Line Number (optiona): Return line
+  numbers with rows.
+
+Examples:
+
+```
+Goal: Read file file and return markdown section label "Notes".
+Filename: relative/path/to/file.md
+Line numbers: true
+```
+
+```
+Goal: Read file file and return selected rows.
+Filename: relative/path/to/file.md
+Offset: 9
+Limit: 5
+Line numbers: true
+```
+
+2. String Replacement
+
+Find a specific string and replace the contents. Always read a file immediately
+before making changes to validate row numbers.
+
+```
+Goal: Read file and replace string following colon with new contents after colon.  Strings are `\` escaped. Validate the file was updated.
+Filename: relative/path/to/file.
+All Occurrences: true
+Current:<Exact string with no leading space and change returns to `\n`>
+New:<Exact string with no leading space and change returns to `\n`>
+```
+
+3. Patch file
+
+Provide a set of one or more row groups with new contents. Always read a file
+immediately before making changes to validate row numbers.
+
+```
+Goal: Read file. From the following list of changes, generate a patch file and apply it.  Strings are `\` escaped.  Validate that the patch was applied.
+Filename: <full relative or absolute path to file>
+- Start: 9
+  End: 12
+  New Contents:<Exact string with no leading space and change returns to `\n`>
+- Start: 40
+  End: 40
+  New Contents:<Exact string with no leading space and change returns to `\n`>
+```
+
+3. Replace file
+
+Staring and ending lines are 1 based. Example:
+
+```
+Goal: Read the file then replace the contents file with what follows after the the `New Content:` line.  Validate that update was successfully written.
+Filename: <full relative or absolute path to file>
+New Contents:
+<New contents without a trailing new line>
+```
 
 ### Report Format For File Details
 
@@ -185,7 +257,3 @@ path/to/file4,chmod,u+x path/to/file5,chown,userA:groupA to userB:groupB
 - Always validate the acceptance criteria after performing file operations.
 - Validate file paths and handle errors gracefully.
 - Provide meaningful error messages if the operation cannot be completed.
-
-```
-
-```

@@ -3,10 +3,11 @@ description:
   General-purpose agent with all permissions for complex, multi-step tasks and
   coding.
 purpose:
-  when-to-call: "When you need a general-purpose agent for complex multi-step tasks that don't fit other specialized agents"
+  when-to-call:
+    "When you need a general-purpose agent for complex multi-step tasks that don't
+    fit other specialized agents"
   active: true
-type: subagent
-mode: subagent
+mode: primary
 model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:

@@ -1,86 +1,350 @@
-Here are the available tool calls in this environment, with a short description and
-key usage notes for each.
+# Tools | OpenCode
 
-functions.webfetch
-- Purpose: Fetch and convert a web page to text/markdown/html and extract information.
-- Key params: { url: string, format: "text"|"markdown"|"html", timeout?: number }
-- Notes: URL must be fully-formed (HTTP upgraded to HTTPS). Use when you need to
-  read/analyze page content.
+Tools allow the LLM to perform actions in your codebase. OpenCode comes with a set of
+built-in tools, but you can extend it with
+[custom tools](https://opencode.ai/docs/custom-tools) or
+[MCP servers](https://opencode.ai/docs/mcp-servers).
 
-functions.glob
-- Purpose: Fast file pattern matching (glob) across the workspace.
-- Key params: { path?: string, pattern: string }
-- Notes: Returns matching file paths sorted by modification time. Use for finding
-  files by name patterns.
+By default, all tools are **enabled** and don't need permission to run. You can
+control tool behavior through [permissions](https://opencode.ai/docs/permissions).
 
-functions.grep
-- Purpose: Search file contents with regular expressions.
-- Key params: { pattern: string, include?: string, path?: string }
-- Notes: Returns files with at least one match. Use for content searches (supports
-  full regex).
+---
 
-functions.list
-- Purpose: List files/directories in a path.
-- Key params: { path?: string, ignore?: string[] }
-- Notes: Path must be absolute if provided. Prefer glob/grep when you know patterns
-  to search.
+## [Configure](https://opencode.ai/docs/tools/#configure)
 
-functions.read
-- Purpose: Read a file from the filesystem.
-- Key params: { filePath: string, limit?: number, offset?: number }
-- Notes: filePath must be absolute. Reads up to 2000 lines by default, returns
-  numbered lines.
+Use the `permission` field to control tool behavior. You can allow, deny, or require
+approval for each tool.
 
-functions.todowrite
-- Purpose: Create/update a structured todo list for development tasks.
-- Key params: { todos:  { content, id, priority, status }  }
-- Notes: Use for multi-step or complex coding tasks; enforces task states and one
-  in_progress at a time.
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "deny",
+    "bash": "ask",
+    "webfetch": "allow"
+  }
+}
+```
 
-functions.todoread
-- Purpose: Read the current todo list.
-- Key params: none
-- Notes: Use to inspect the active todo list.
+You can also use wildcards to control multiple tools at once. For example, to require
+approval for all tools from an MCP server:
 
-functions.task
-- Purpose: Launch a specialized sub-agent to perform multi-step or complex autonomous tasks.
-- Key params: { description: string, prompt: string, subagent_type: string }
-- Notes: Must select a subagent_type (e.g., general, files-read, web-search, git,
-  etc.). Agent runs autonomously and returns a single message.
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "mymcp_*": "ask"
+  }
+}
+```
 
-functions.opencode-cli
-- Purpose: Get available models from opencode and format as a numbered markdown list.
-- Key params: none
-- Notes: Returns opencode model info.
+[Learn more](https://opencode.ai/docs/permissions) about configuring permissions.
 
-functions.horology
-- Purpose: Get current date/time as formatted string.
-- Key params: none
+---
 
-functions.is_leap_year
-- Purpose: Returns true if the current year is a leap year, false otherwise.
-- Key params: none
+## [Built-in](https://opencode.ai/docs/tools/#built-in)
 
-functions.horology_formatCurrentDateTime
-- Purpose: Get current date/time in a formatted string.
-- Key params: none
+Here are all the built-in tools available in OpenCode.
 
-functions.horology_getOrdinalSuffix
-- Purpose: Get ordinal suffix for a date (e.g., "st", "nd", "th").
-- Key params: none
+---
 
-functions.mcp-context7_resolve-library-id
-- Purpose: Resolve a package/library name to a Context7-compatible library ID (required before fetching docs).
-- Key params: { libraryName: string }
-- Notes: Must be called before mcp-context7_get-library-docs unless user provides an
-  exact Context7 ID.
+### [bash](https://opencode.ai/docs/tools/#bash)
 
-functions.mcp-context7_get-library-docs
-- Purpose: Fetch documentation for a Context7 library ID.
-- Key params: { context7CompatibleLibraryID: string, tokens?: number, topic?: string }
-- Notes: Requires a Context7-compatible library ID (from resolve-library-id).
+Execute shell commands in your project environment.
 
-multi_tool_use.parallel
-- Purpose: Run multiple functions.* tools in parallel.
-- Key params: { tool_uses:  { recipient_name: "functions.<name>", parameters: {...} }  }
-- Notes: Only functions namespace tools allowed. Use to execute independent tool calls concurrently.
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "bash": "allow"
+  }
+}
+```
+
+This tool allows the LLM to run terminal commands like `npm install`, `git status`,
+or any other shell command.
+
+---
+
+### [edit](https://opencode.ai/docs/tools/#edit)
+
+Modify existing files using exact string replacements.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow"
+  }
+}
+```
+
+This tool performs precise edits to files by replacing exact text matches. It's the
+primary way the LLM modifies code.
+
+---
+
+### [write](https://opencode.ai/docs/tools/#write)
+
+Create new files or overwrite existing ones.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow"
+  }
+}
+```
+
+Use this to allow the LLM to create new files. It will overwrite existing files if
+they already exist.
+
+---
+
+### [read](https://opencode.ai/docs/tools/#read)
+
+Read file contents from your codebase.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": "allow"
+  }
+}
+```
+
+This tool reads files and returns their contents. It supports reading specific line
+ranges for large files.
+
+---
+
+### [grep](https://opencode.ai/docs/tools/#grep)
+
+Search file contents using regular expressions.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "grep": "allow"
+  }
+}
+```
+
+Fast content search across your codebase. Supports full regex syntax and file pattern
+filtering.
+
+---
+
+### [glob](https://opencode.ai/docs/tools/#glob)
+
+Find files by pattern matching.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "glob": "allow"
+  }
+}
+```
+
+Search for files using glob patterns like `**/*.js` or `src/**/*.ts`. Returns
+matching file paths sorted by modification time.
+
+---
+
+### [list](https://opencode.ai/docs/tools/#list)
+
+List files and directories in a given path.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "list": "allow"
+  }
+}
+```
+
+This tool lists directory contents. It accepts glob patterns to filter results.
+
+---
+
+### [lsp (experimental)](https://opencode.ai/docs/tools/#lsp-experimental)
+
+Interact with your configured LSP servers to get code intelligence features like
+definitions, references, hover info, and call hierarchy.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "lsp": "allow"
+  }
+}
+```
+
+Supported operations include `goToDefinition`, `findReferences`, `hover`,
+`documentSymbol`, `workspaceSymbol`, `goToImplementation`, `prepareCallHierarchy`,
+`incomingCalls`, and `outgoingCalls`.
+
+To configure which LSP servers are available for your project, see
+[LSP Servers](https://opencode.ai/docs/lsp).
+
+---
+
+### [patch](https://opencode.ai/docs/tools/#patch)
+
+Apply patches to files.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow"
+  }
+}
+```
+
+This tool applies patch files to your codebase. Useful for applying diffs and patches
+from various sources.
+
+---
+
+### [skill](https://opencode.ai/docs/tools/#skill)
+
+Load a [skill](https://opencode.ai/docs/skills) (a `SKILL.md` file) and return its
+content in the conversation.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "skill": "allow"
+  }
+}
+```
+
+---
+
+### [todowrite](https://opencode.ai/docs/tools/#todowrite)
+
+Manage todo lists during coding sessions.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "todowrite": "allow"
+  }
+}
+```
+
+Creates and updates task lists to track progress during complex operations. The LLM
+uses this to organize multi-step tasks.
+
+---
+
+### [todoread](https://opencode.ai/docs/tools/#todoread)
+
+Read existing todo lists.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "todoread": "allow"
+  }
+}
+```
+
+Reads the current todo list state. Used by the LLM to track what tasks are pending or
+completed.
+
+---
+
+### [webfetch](https://opencode.ai/docs/tools/#webfetch)
+
+Fetch web content.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "webfetch": "allow"
+  }
+}
+```
+
+Allows the LLM to fetch and read web pages. Useful for looking up documentation or
+researching online resources.
+
+---
+
+### [question](https://opencode.ai/docs/tools/#question)
+
+Ask the user questions during execution.
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "question": "allow"
+  }
+}
+```
+
+This tool allows the LLM to ask the user questions during a task. It's useful for:
+
+- Gathering user preferences or requirements
+- Clarifying ambiguous instructions
+- Getting decisions on implementation choices
+- Offering choices about what direction to take
+
+Each question includes a header, the question text, and a list of options. Users can
+select from the provided options or type a custom answer. When there are multiple
+questions, users can navigate between them before submitting all answers.
+
+---
+
+Custom tools let you define your own functions that the LLM can call. These are
+defined in your config file and can execute arbitrary code.
+
+[Learn more](https://opencode.ai/docs/custom-tools) about creating custom tools.
+
+---
+
+## [MCP servers](https://opencode.ai/docs/tools/#mcp-servers)
+
+MCP (Model Context Protocol) servers allow you to integrate external tools and
+services. This includes database access, API integrations, and third-party services.
+
+[Learn more](https://opencode.ai/docs/mcp-servers) about configuring MCP servers.
+
+---
+
+## [Internals](https://opencode.ai/docs/tools/#internals)
+
+Internally, tools like `grep`, `glob`, and `list` use
+[ripgrep](https://github.com/BurntSushi/ripgrep) under the hood. By default, ripgrep
+respects `.gitignore` patterns, which means files and directories listed in your
+`.gitignore` will be excluded from searches and listings.
+
+---
+
+### [Ignore patterns](https://opencode.ai/docs/tools/#ignore-patterns)
+
+To include files that would normally be ignored, create a `.ignore` file in your
+project root. This file can explicitly allow certain paths.
+
+```gitignore
+!node_modules/
+!dist/
+!build/
+```
+
+For example, this `.ignore` file allows ripgrep to search within `node_modules/`,
+`dist/`, and `build/` directories even if they're listed in `.gitignore`.
