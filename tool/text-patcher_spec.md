@@ -2,7 +2,11 @@
 
 ## Overview
 
-The Text Patcher tool provides utilities for reading and writing files with integrity checks to prevent accidental file corruption. It is designed to be used as a plugin/tool in the OpenCode ecosystem, solving the problem of agents incorrectly updating files, either by accidentally replacing the entire contents or modifying the wrong places.
+The Text Patcher tool provides utilities for reading and writing files with integrity
+checks to prevent accidental file corruption. It is designed to be used as a
+plugin/tool in the OpenCode ecosystem, solving the problem of agents incorrectly
+updating files, either by accidentally replacing the entire contents or modifying the
+wrong places.
 
 ## Purpose
 
@@ -27,7 +31,8 @@ Text Patcher solves the problem of agents updating files incorrectly by:
 - Accepts optional parameters for rows:
   - `offset`/`limit` (e.g., offset: 10, limit: 20)
   - `start`/`end` (e.g., start: 10, end: 30)
-  - `seek` (optional): JavaScript regular expression pattern to search for matching lines
+  - `seek` (optional): JavaScript regular expression pattern to search for matching
+    lines
 - Rows are 1-based
 
 **Return Format for `text_read`:**
@@ -99,14 +104,16 @@ patches:
    - Returns error if file does not exist or cannot be read
    - For new files (that don't exist yet), returns `token: null` in frontmatter
    - Accepts optional `seek` parameter with JavaScript regex pattern for searching
-   - When `seek` is provided, searches from `offset` (default: 1) to `end` (default: min(file_length, 99999 - limit))
+   - When `seek` is provided, searches from `offset` (default: 1) to `end` (default:
+     min(file_length, 99999 - limit))
    - Returns first line matching the regex pattern as the new `offset`
    - Returns `limit` rows starting from the matched line
    - Cannot combine `seek` with `start` parameter (returns error)
    - Returns error "No match found." when no match exists
    - Maximum line number that can be returned is 99999
    - The `end` parameter is never returned in frontmatter output
-   - All errors return frontmatter format with `error` property and appropriate metadata
+   - All errors return frontmatter format with `error` property and appropriate
+     metadata
 
 2. **Text Patch (`text_patch`)**:
    - Accepts filename, token, and array of patches
@@ -115,8 +122,10 @@ patches:
    - Patches are sorted by offset (ascending) and applied sequentially
    - Cumulative shift is tracked: `shift += (rows.length - limit)` after each patch
    - Overlapping patches (based on original row numbers) are rejected as errors
-   - Patches can insert rows (rows.length > limit), replace (equal), or delete (rows.length < limit or empty array)
-   - Verifies file SHA matches provided token before applying patches (unless token is null for new files)
+   - Patches can insert rows (rows.length > limit), replace (equal), or delete
+     (rows.length < limit or empty array)
+   - Verifies file SHA matches provided token before applying patches (unless token
+     is null for new files)
    - Rejects patches if file has changed (SHA mismatch)
    - Applies all patches atomically (all or nothing)
    - Can create new files when token is null
@@ -131,7 +140,8 @@ patches:
    - Patches exceeding file bounds
    - Return clear error messages for all failure cases
    - All errors are returned in frontmatter format with an `error` property
-   - Error responses include filename, token (SHA hash or null), and relevant parameters
+   - Error responses include filename, token (SHA hash or null), and relevant
+     parameters
    - Example error format should be shown
 
 4. **Default Tool**: The default export provides information about the tool
@@ -140,8 +150,10 @@ patches:
 
 ### Non-Functional Requirements
 
-1. **Language Independence**: The specification must be implementable in any programming language
-2. **Performance**: File operations should be efficient and handle large files appropriately
+1. **Language Independence**: The specification must be implementable in any
+   programming language
+2. **Performance**: File operations should be efficient and handle large files
+   appropriately
 3. **Type Safety**: All functions should have proper TypeScript type definitions
 4. **Readability**: Error messages and outputs must be clear and actionable
 5. **Atomicity**: Patches must be applied atomically (all or nothing)
@@ -150,6 +162,7 @@ patches:
 ## Acceptance Criteria
 
 ### `text_read`
+
 - [x] Accepts a filename parameter
 - [x] Returns SHA token in frontmatter and file contents
 - [x] Returns `token: null` for non-existent files (new file case)
@@ -172,6 +185,7 @@ patches:
 - [ ] Maximum returned line number is 99999
 
 ### `text_patch`
+
 - [x] Accepts filename, token, and patches array
 - [x] All patches reference original row numbers from read
 - [x] Sorts patches by offset before applying
@@ -191,6 +205,7 @@ patches:
 - [x] Handles patches with empty rows array (pure deletion)
 
 ### General
+
 - [x] The tool has proper TypeScript type definitions
 - [x] The tool follows OpenCode custom tool conventions
 - [x] The tool exports both a default tool and named sub-tools
@@ -203,21 +218,21 @@ patches:
 
 ```typescript
 // Read first 40 rows (default)
-const result = await text_patcher_text_read({ filename: "/path/to/file.txt" })
+const result = await text_patcher_text_read({ filename: "/path/to/file.txt" });
 
 // Read specific range using offset/limit
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/file.txt",
   offset: 10,
-  limit: 20
-})
+  limit: 20,
+});
 
 // Read specific range using start/end
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/file.txt",
   start: 10,
-  end: 30
-})
+  end: 30,
+});
 
 // Returns:
 // ---
@@ -246,21 +261,18 @@ const patch = {
         "// Updated comment",
         "function newImplementation() {",
         "  return true;",
-        "}"
-      ]
+        "}",
+      ],
     },
     {
       offset: 30,
       limit: 1,
-      rows: [
-        "// Another update",
-        "const value = 42;"
-      ]
-    }
-  ]
-}
+      rows: ["// Another update", "const value = 42;"],
+    },
+  ],
+};
 
-const result = await text_patcher_text_patch(patch)
+const result = await text_patcher_text_patch(patch);
 // Returns: { success: true, message: "Patches applied successfully" }
 
 // Or on error:
@@ -270,7 +282,7 @@ const result = await text_patcher_text_patch(patch)
 ### Using the Default Tool
 
 ```typescript
-const info = await text_patcher({})
+const info = await text_patcher({});
 // Returns: "Text Patcher tool - use text_read or text_patch sub-tools for file operations"
 ```
 
@@ -278,7 +290,9 @@ const info = await text_patcher({})
 
 ```typescript
 // Read non-existent file first
-const readResult = await text_patcher_text_read({ filename: "/path/to/new-file.txt" })
+const readResult = await text_patcher_text_read({
+  filename: "/path/to/new-file.txt",
+});
 // Returns token: null in frontmatter
 
 // Create the file with initial content
@@ -293,13 +307,13 @@ const patch = {
         "// New file content",
         "const greeting = 'Hello, world!';",
         "",
-        "export { greeting };"
-      ]
-    }
-  ]
-}
+        "export { greeting };",
+      ],
+    },
+  ],
+};
 
-const result = await text_patcher_text_patch(patch)
+const result = await text_patcher_text_patch(patch);
 // Returns: { success: true, message: "File created successfully" }
 ```
 
@@ -314,12 +328,12 @@ const patch = {
     {
       offset: 5,
       limit: 6,
-      rows: []  // Empty array = deletion
-    }
-  ]
-}
+      rows: [], // Empty array = deletion
+    },
+  ],
+};
 
-const result = await text_patcher_text_patch(patch)
+const result = await text_patcher_text_patch(patch);
 // Returns: { success: true, message: "Patches applied successfully" }
 ```
 
@@ -327,11 +341,11 @@ const result = await text_patcher_text_patch(patch)
 
 ```typescript
 // Find first function definition
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/code.js",
   seek: "/^function\\s+\\w+/",
-  limit: 10
-})
+  limit: 10,
+});
 
 // Returns (if match found at line 25):
 // ---
@@ -346,19 +360,19 @@ const result = await text_patcher_text_read({
 // ...
 
 // Search within a specific range (lines 100-500)
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/large-file.txt",
   seek: "/ERROR/i",
   offset: 100,
   end: 500,
-  limit: 5
-})
+  limit: 5,
+});
 
 // No match found
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/file.txt",
-  seek: "/NotFound/"
-})
+  seek: "/NotFound/",
+});
 
 // Returns:
 // ---
@@ -375,11 +389,11 @@ const result = await text_patcher_text_read({
 
 ```typescript
 // Invalid parameters
-const result = await text_patcher_text_read({ 
+const result = await text_patcher_text_read({
   filename: "/path/to/file.txt",
   offset: 0,
-  limit: 10
-})
+  limit: 10,
+});
 
 // Returns:
 // ---
@@ -391,9 +405,9 @@ const result = await text_patcher_text_read({
 // ---
 
 // File permission error
-const result = await text_patcher_text_read({ 
-  filename: "/restricted/file.txt"
-})
+const result = await text_patcher_text_read({
+  filename: "/restricted/file.txt",
+});
 
 // Returns:
 // ---
@@ -407,12 +421,15 @@ const result = await text_patcher_text_read({
 
 - Use SHA-256 or similar cryptographic hash for token generation
 - Row numbers are 1-based for human readability
-- Row numbers in output are formatted as 5-digit zero-padded strings (00001, 00002, etc.)
+- Row numbers in output are formatted as 5-digit zero-padded strings (00001, 00002,
+  etc.)
 - Row ranges using start/end are inclusive (start: 10, end: 30 includes row 30)
-- Offset/limit: `offset: 10, limit: 5` replaces rows 10-14 (5 rows starting at offset 10)
+- Offset/limit: `offset: 10, limit: 5` replaces rows 10-14 (5 rows starting at
+  offset 10)
 - Patches reference original row numbers from the read operation
 - Patches are sorted by offset (ascending) before application
-- Patches are applied sequentially using in-place array splice with cumulative shift tracking
+- Patches are applied sequentially using in-place array splice with cumulative shift
+  tracking
 - Shift calculation: `cumulativeShift += (rows.length - limit)` after each patch
 - Overlapping patches (based on original row numbers) must be detected and rejected
 - Empty rows in patch content should be preserved
@@ -420,11 +437,14 @@ const result = await text_patcher_text_read({
 - File encoding should default to UTF-8
 - Line endings should be preserved as-is from the original file
 - New files can be created when token is null
-- When `seek` is provided, the search begins at `offset` (default: 1) and ends at `end` (default: min(file_length, 99999 - limit))
-- The regex pattern in `seek` follows JavaScript regex syntax including flags (e.g., `/pattern/i` for case-insensitive)
+- When `seek` is provided, the search begins at `offset` (default: 1) and ends at
+  `end` (default: min(file_length, 99999 - limit))
+- The regex pattern in `seek` follows JavaScript regex syntax including flags (e.g.,
+  `/pattern/i` for case-insensitive)
 - Only the first matching line is returned; subsequent matches are ignored
 - The `end` parameter is never included in frontmatter output
-- Error responses use frontmatter format with `error` property and include filename, token, and relevant parameters
+- Error responses use frontmatter format with `error` property and include filename,
+  token, and relevant parameters
 
 ## Out of Scope (Current Version)
 
