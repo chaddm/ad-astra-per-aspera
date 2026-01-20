@@ -31,6 +31,21 @@ functions.read
 - Notes: filePath must be absolute. Reads up to 2000 lines by default, returns
   numbered lines.
 
+functions.text_patcher_text_read
+- Purpose: Read a file with SHA-256 token and 1-based row numbering for integrity-checked editing.
+- Key params: { filename: string, offset?: number, limit?: number, start?: number, end?: number }
+- Notes: Returns YAML frontmatter with SHA token + numbered rows. Returns token: null for non-existent files. Default limit: 40, max: 100. Row numbers are 1-based (unlike functions.read). See docs/opencode/text-patcher.md for details.
+
+functions.text_patcher_text_patch
+- Purpose: Apply one or more row-based patches with SHA integrity verification (atomic operation).
+- Key params: { filename: string, token: string | null, patches: Array<{ offset/limit OR start/end, rows: string[] }> }
+- Notes: All patch offsets reference original row numbers from text_read. Patches sorted by offset before applying. Verifies SHA token matches file state. Can create new files with token: null. Empty rows array deletes rows. See docs/opencode/text-patcher.md for details.
+
+functions.text_patcher
+- Purpose: Default text-patcher tool (informational).
+- Key params: none
+- Notes: Returns description of text_read and text_patch sub-tools. Use sub-tools for actual operations.
+
 functions.todowrite
 - Purpose: Create/update a structured todo list for development tasks.
 - Key params: { todos:  { content, id, priority, status }  }

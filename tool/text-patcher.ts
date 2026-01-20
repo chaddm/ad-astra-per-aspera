@@ -34,31 +34,31 @@ function getRowRange(params: { offset?: number, limit?: number, start?: number, 
 
   if (start !== undefined || end !== undefined) {
     if (start !== undefined && start < 1) {
-      error = `start must be >= 1`
+      error = `invalid: start must be >= 1`
     } else if (end !== undefined && end < 1) {
-      error = `end must be >= 1`
+      error = `invalid: end must be >= 1`
     } else if (start !== undefined && end !== undefined && end < start) {
-      error = `end must be >= start`
+      error = `invalid: end must be >= start`
     } else {
       _offset = start ?? 1
       _limit = (end !== undefined ? ((end - _offset) + 1) : (_limit))
     }
   } else if (offset !== undefined || limit !== undefined) {
     if (offset !== undefined && offset < 1) {
-      error = `offset must be >= 1`
-    } else if (limit !== undefined && limit < 1) {
-      error = `limit must be >= 1`
+      error = `invalid: offset must be >= 1`
+    } else if (limit !== undefined && limit < 0) {
+      error = `invalid: limit must be >= 0`
     } else {
       _offset = offset ?? 1
       _limit = limit ?? defaultLimit ?? 40
     }
   }
   if (_limit > (maxLimit ?? 100)) {
-    error = `limit must not exceed ${(maxLimit ?? 100)}`
+    error = `invalid: limit must not exceed ${(maxLimit ?? 100)}`
   }
   // Adjust for file length
   if (_offset > totalRows + 1) {
-    error = `Offset/start (${_offset}) exceeds file length (${totalRows})`
+    error = `Offset/start (${_offset}) out of bounds (file has ${totalRows} rows)`
   }
   if ((_offset - 1) + _limit > totalRows) {
     _limit = totalRows - (_offset - 1)
@@ -101,13 +101,13 @@ export const text_read = tool({
         fileExists = false
         lines = []
       } else {
-        return { error: `Could not read file: ${err.message}` }
+        return `error: Could not read file: ${err.message}`
       }
     }
     const totalRows = lines.length
     const range = getRowRange({ offset, limit, start, end, defaultLimit: 40, maxLimit: 100, totalRows })
     if (range.error) {
-      return { error: range.error }
+      return `error: ${range.error}`
     }
     const selected: string[] = []
     for (let i = 0; i < range.limit; i++) {
@@ -208,19 +208,19 @@ export const text_patch = tool({
         fileExists = false
         lines = []
       } else {
-        return { success: false, error: `Could not read file: ${err.message}` }
+        return `error: Could not read file: ${err.message}`
       }
     }
     // If token is not null, verify against file contents
     if (token !== null) {
       const sha = computeSha256(fileText)
       if (sha !== token) {
-        return { success: false, error: "File has changed. Please read the file again." }
+        return "error: File has changed. Please read the file again."
       }
     } else if (!fileExists) {
       fileWasNew = true
     } else {
-      return { success: false, error: "Token is null but file already exists." }
+      return "error: Token is null but file already exists."
     }
     const totalRows = lines.length
     // Compute effective patch ranges, sort and check overlaps
@@ -230,7 +230,7 @@ export const text_patch = tool({
       // Compute range
       let rng = getRowRange({ ...patch, defaultLimit: 0, maxLimit: 1e6, totalRows })
       if (rng.error) {
-        return { success: false, error: `Patch #${i+1}: ${rng.error}` }
+        return `error: Patch #${i+1}: ${rng.error}`
       }
       // Compute start/end (1-based, inclusive)
       let ogStart = rng.offset
@@ -244,7 +244,7 @@ export const text_patch = tool({
     const relevantPatches = normalized.filter(p => !(p.ogEnd < p.ogStart))
     const overlapErr = detectOverlaps(relevantPatches)
     if (overlapErr) {
-      return { success: false, error: overlapErr }
+      return `error: ${overlapErr}`
     }
     // Apply all patches atomically
     let patched: string[] = Array.from(lines)
@@ -261,22 +261,27 @@ export const text_patch = tool({
       // If insert: limit==0, just insert rows at origStartIdx+shift
       // Bounds guards
       if (patch.limit < 0 || patch.offset < 1) {
-        return { success: false, error: `Patch #${patch.patchIdx+1} invalid offset/limit` }
+        return `error: Patch #${patch.patchIdx+1} invalid offset/limit`
       }
       if (patch.limit > 0 && (origStartIdx < 0 || (origStartIdx + origLimit) > (patched.length + 1))) {
-        return { success: false, error: `Patch #${patch.patchIdx+1} out of file bounds (rows ${patch.ogStart}-${patch.ogEnd})`}
+        return `error: Patch #${patch.patchIdx+1} out of file bounds (rows ${patch.ogStart}-${patch.ogEnd})`
       }
       patched.splice(curStartIdx, origLimit, ...insertRows)
       shift += (insertRows.length - origLimit)
     }
+    // Ensure parent directory exists for new files
+    if (fileWasNew) {
+      const parentDir = path.dirname(absPath)
+      await fs.mkdir(parentDir, { recursive: true })
+    }
     try {
       await fs.writeFile(absPath, patched.join("\n"), { encoding: "utf8" })
       if (fileWasNew) {
-        return { success: true, message: "File created successfully" }
+        return "success: File created successfully"
       }
-      return { success: true, message: "Patches applied successfully" }
+      return "success: Patches applied successfully"
     } catch (err: any) {
-      return { success: false, error: `Could not write file: ${err.message}` }
+      return `error: Could not write file: ${err.message}`
     }
   }
 })
@@ -285,7 +290,7 @@ export const text_patch = tool({
  * The default tool exports info about sub-tools and usage.
  */
 const text_patcher_default = tool({
-  description: "Text Patcher tool - use text_read or text_patch sub-tools for file operations.",
+  description: "Handle file reading and writing through operational transforms",
   args: {},
   async execute() {
     return "Text Patcher tool - use text_read or text_patch sub-tools for file operations."

@@ -32,7 +32,7 @@ const parseFrontmatter = (output: string): TextReadFrontmatter | null => {
     const match = lines[i].match(/^(\s?\w+):\s*(.*)$/);
     if (match) {
       const [, key, value] = match
-      frontmatter[key] = value === "null" ? null : value
+      frontmatter[key] = value
     }
     i++
   }
@@ -381,6 +381,7 @@ describe("text-patcher tool", () => {
         }, {} as any)
 
         expect(patchResult).toContain("success")
+      })
 
       it("sorts patches by offset before applying (unsorted input)", async () => {
         const content = Array.from({ length: 20 }, (_, i) => `Line ${i + 1}`).join("\n")
@@ -454,7 +455,7 @@ describe("text-patcher tool", () => {
         // Verify the result
         const verifyResult = await text_read.execute({ filename: TEST_FILE }, {} as any)
         const lines = extractContent(verifyResult)
-
+        
         // Row 5 was replaced with 3 rows (Insert A, B, C)
         expect(lines[4]).toContain("Insert A")
         expect(lines[5]).toContain("Insert B")
@@ -504,7 +505,7 @@ describe("text-patcher tool", () => {
         // Verify final content
         const verifyResult = await text_read.execute({ filename: TEST_FILE }, {} as any)
         const lines = extractContent(verifyResult)
-
+        
         // Original 30 lines - 2 + 2 - 2 + 0 = 28 lines
         expect(lines.length).toBe(28)
       })
@@ -550,7 +551,6 @@ describe("text-patcher tool", () => {
         expect(lines[5]).toBe("Line 4")
         expect(lines[6]).toBe("Line 7") // Original lines 5-6 were deleted
         expect(lines[7]).toBe("Line 8")
-      })
       })
     })
 
@@ -789,3 +789,4 @@ describe("text-patcher tool", () => {
     })
   })
 })
+

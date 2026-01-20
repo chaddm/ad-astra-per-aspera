@@ -7,22 +7,35 @@ short summary and guidance on when each should be updated.
 
 ## Table of Contents
 
+- [agent-settings.md](agent-settings.md)
 - [agents.md](agents.md)
 - [available-agents.md](available-agents.md)
 - [builtin-tools.md](builtin-tools.md)
+- [built-in-read-write-tools.md](built-in-read-write-tools.md)
+- [built-in-tool-todo.md](built-in-tool-todo.md)
 - [code-standards.md](code-standards.md)
 - [commands.md](commands.md)
 - [custom-tools.md](custom-tools.md)
 - [mcp-servers.md](mcp-servers.md)
 - [ollama.md](ollama.md)
 - [opencode-cli.md](opencode-cli.md)
+- [plugins.md](plugins.md)
 - [themes.md](themes.md)
+- [text-patcher.md](text-patcher.md)
 - [tools.md](tools.md)
-- [\_index.md](_index.md)
+- [_index.md](_index.md)
 
 ---
 
 ## Document Summaries
+
+### [agent-settings.md](agent-settings.md)
+
+**Summary:** Documentation for agent settings and configuration options available through frontmatter in agent markdown files. Covers description, mode, model, permissions, tools, and other customization options.
+
+**When to update:** Update when new agent settings are added, existing settings change, or configuration patterns are updated. Revise if new examples or best practices for agent configuration are introduced.
+
+---
 
 ### [agents.md](agents.md)
 
@@ -53,6 +66,22 @@ descriptions, parameters, and usage notes for each tool.
 
 **When to update:** Update when new built-in tools are added, removed, or their APIs
 change. Revise if tool usage patterns or parameter requirements are updated.
+
+---
+
+### [built-in-read-write-tools.md](built-in-read-write-tools.md)
+
+**Summary:** Comprehensive guide to all built-in tools for reading, writing, editing, and patching files in OpenCode. Covers functions.read, functions.write, functions.edit, functions.patch, and text-patcher tools with examples and usage patterns.
+
+**When to update:** Update when new read/write tools are added, existing tool APIs change, or usage patterns are updated. Revise if new examples, workflows, or best practices are introduced.
+
+---
+
+### [built-in-tool-todo.md](built-in-tool-todo.md)
+
+**Summary:** Documentation for the built-in TODO tool in OpenCode, which helps manage structured task lists for coding sessions. Covers todoread, todowrite, task states, priorities, and best practices.
+
+**When to update:** Update when TODO tool features, task states, or management patterns change. Revise if new usage examples or best practices are introduced.
 
 ---
 
@@ -118,6 +147,14 @@ Revise if new workflows or troubleshooting steps are introduced.
 
 ---
 
+### [plugins.md](plugins.md)
+
+**Summary:** Guide to creating OpenCode plugins, including structure, lifecycle, event hooks, registration, and usage. Explains how to extend OpenCode with custom functionality through the plugin system.
+
+**When to update:** Update when plugin API, lifecycle hooks, or registration patterns change. Revise if new plugin features, examples, or best practices are introduced.
+
+---
+
 ### [themes.md](themes.md)
 
 **Summary:** Guide to selecting, customizing, and managing themes in OpenCode,
@@ -126,6 +163,14 @@ including terminal requirements, built-in themes, and custom theme creation.
 **When to update:** Update when new themes are added, theme configuration changes, or
 terminal requirements are updated. Revise if new customization options or best
 practices are introduced.
+
+---
+
+### [text-patcher.md](text-patcher.md)
+
+**Summary:** Comprehensive documentation for the Text Patcher tool, which provides integrity-checked file reading and patching operations using SHA-256 tokens. Includes workflow, tool reference, examples, key concepts, and best practices.
+
+**When to update:** Update when text-patcher tool features, APIs, or behavior changes. Revise if new examples, best practices, or troubleshooting steps are added.
 
 ---
 
@@ -140,7 +185,7 @@ introduced.
 
 ---
 
-### [\_index.md](_index.md)
+### [_index.md](_index.md)
 
 **Summary:** This index file. Lists all documentation files in `docs/opencode` with
 summaries and update instructions.

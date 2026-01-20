@@ -27,6 +27,7 @@ Text Patcher solves the problem of agents updating files incorrectly by:
 - Accepts optional parameters for rows:
   - `offset`/`limit` (e.g., offset: 10, limit: 20)
   - `start`/`end` (e.g., start: 10, end: 30)
+  - `seek` (optional): JavaScript regular expression pattern to search for matching lines
 - Rows are 1-based
 
 **Return Format for `text_read`:**
@@ -38,7 +39,8 @@ token: <sha256-hash>
 offset: <offset>
 limit: <limit>
 start: <start>
-end: <end>
+seek: <regex-pattern>
+error: <error-message>
 ---
 00001|<content of row 1>
 00002|<content of row 2>
@@ -96,6 +98,15 @@ patches:
    - Returns YAML frontmatter with metadata including token
    - Returns error if file does not exist or cannot be read
    - For new files (that don't exist yet), returns `token: null` in frontmatter
+   - Accepts optional `seek` parameter with JavaScript regex pattern for searching
+   - When `seek` is provided, searches from `offset` (default: 1) to `end` (default: min(file_length, 99999 - limit))
+   - Returns first line matching the regex pattern as the new `offset`
+   - Returns `limit` rows starting from the matched line
+   - Cannot combine `seek` with `start` parameter (returns error)
+   - Returns error "No match found." when no match exists
+   - Maximum line number that can be returned is 99999
+   - The `end` parameter is never returned in frontmatter output
+   - All errors return frontmatter format with `error` property and appropriate metadata
 
 2. **Text Patch (`text_patch`)**:
    - Accepts filename, token, and array of patches
@@ -119,6 +130,9 @@ patches:
    - Invalid row ranges
    - Patches exceeding file bounds
    - Return clear error messages for all failure cases
+   - All errors are returned in frontmatter format with an `error` property
+   - Error responses include filename, token (SHA hash or null), and relevant parameters
+   - Example error format should be shown
 
 4. **Default Tool**: The default export provides information about the tool
    - No arguments required
@@ -136,42 +150,52 @@ patches:
 ## Acceptance Criteria
 
 ### `text_read`
-- [ ] Accepts a filename parameter
-- [ ] Returns SHA token in frontmatter and file contents
-- [ ] Returns `token: null` for non-existent files (new file case)
-- [ ] Defaults to first 40 rows when no range specified
-- [ ] Enforces maximum of 100 rows per read
-- [ ] Accepts offset/limit parameters (1-based)
-- [ ] Accepts start/end parameters (1-based, inclusive)
-- [ ] Returns formatted output with 5-digit row numbers
-- [ ] Returns YAML frontmatter with metadata including token
-- [ ] Returns error for invalid row ranges
+- [x] Accepts a filename parameter
+- [x] Returns SHA token in frontmatter and file contents
+- [x] Returns `token: null` for non-existent files (new file case)
+- [x] Defaults to first 40 rows when no range specified
+- [x] Enforces maximum of 100 rows per read
+- [x] Accepts offset/limit parameters (1-based)
+- [x] Accepts start/end parameters (1-based, inclusive)
+- [x] Returns formatted output with 5-digit row numbers
+- [x] Returns YAML frontmatter with metadata including token
+- [x] Returns error for invalid row ranges
+- [ ] Accepts optional `seek` parameter with JavaScript regex pattern
+- [ ] `seek` searches from `offset` to `end` line range
+- [ ] `seek` returns first matching line as new `offset`
+- [ ] `seek` returns `limit` lines from matched line
+- [ ] `seek` cannot be combined with `start` (returns error)
+- [ ] `seek` returns frontmatter with error "No match found." when no match
+- [ ] `end` parameter is never returned in frontmatter
+- [ ] All errors return frontmatter format with `error` property
+- [ ] Error responses include `token` (SHA hash or null)
+- [ ] Maximum returned line number is 99999
 
 ### `text_patch`
-- [ ] Accepts filename, token, and patches array
-- [ ] All patches reference original row numbers from read
-- [ ] Sorts patches by offset before applying
-- [ ] Detects overlapping patches and rejects as error
-- [ ] Tracks cumulative shift when applying patches sequentially
-- [ ] Applies patches using sequential splice with shift adjustment
-- [ ] Verifies SHA token matches current file state (unless null)
-- [ ] Rejects patches if file has changed (SHA mismatch)
-- [ ] Supports creating new files with `token: null`
-- [ ] Applies patches atomically (all or nothing)
-- [ ] Supports multiple patches in one operation
-- [ ] Supports offset/limit or start/end for each patch (1-based, inclusive)
-- [ ] Returns success message on successful patch
-- [ ] Returns detailed error on failure
-- [ ] Handles patches that extend file length (insert)
-- [ ] Handles patches that reduce file length (delete)
-- [ ] Handles patches with empty rows array (pure deletion)
+- [x] Accepts filename, token, and patches array
+- [x] All patches reference original row numbers from read
+- [x] Sorts patches by offset before applying
+- [x] Detects overlapping patches and rejects as error
+- [x] Tracks cumulative shift when applying patches sequentially
+- [x] Applies patches using sequential splice with shift adjustment
+- [x] Verifies SHA token matches current file state (unless null)
+- [x] Rejects patches if file has changed (SHA mismatch)
+- [x] Supports creating new files with `token: null`
+- [x] Applies patches atomically (all or nothing)
+- [x] Supports multiple patches in one operation
+- [x] Supports offset/limit or start/end for each patch (1-based, inclusive)
+- [x] Returns success message on successful patch
+- [x] Returns detailed error on failure
+- [x] Handles patches that extend file length (insert)
+- [x] Handles patches that reduce file length (delete)
+- [x] Handles patches with empty rows array (pure deletion)
 
 ### General
-- [ ] The tool has proper TypeScript type definitions
-- [ ] The tool follows OpenCode custom tool conventions
-- [ ] The tool exports both a default tool and named sub-tools
-- [ ] Error handling is graceful and provides clear messages
-- [ ] The tool is properly documented with JSDoc comments
+- [x] The tool has proper TypeScript type definitions
+- [x] The tool follows OpenCode custom tool conventions
+- [x] The tool exports both a default tool and named sub-tools
+- [x] Error handling is graceful and provides clear messages
+- [x] The tool is properly documented with JSDoc comments
 
 ## Example Usage
 
@@ -299,6 +323,86 @@ const result = await text_patcher_text_patch(patch)
 // Returns: { success: true, message: "Patches applied successfully" }
 ```
 
+### Seeking with Regex
+
+```typescript
+// Find first function definition
+const result = await text_patcher_text_read({ 
+  filename: "/path/to/code.js",
+  seek: "/^function\\s+\\w+/",
+  limit: 10
+})
+
+// Returns (if match found at line 25):
+// ---
+// filename: /path/to/code.js
+// token: <sha256-hash>
+// offset: 25
+// limit: 10
+// seek: /^function\s+\w+/
+// ---
+// 00025|function myFunction() {
+// 00026|  return true;
+// ...
+
+// Search within a specific range (lines 100-500)
+const result = await text_patcher_text_read({ 
+  filename: "/path/to/large-file.txt",
+  seek: "/ERROR/i",
+  offset: 100,
+  end: 500,
+  limit: 5
+})
+
+// No match found
+const result = await text_patcher_text_read({ 
+  filename: "/path/to/file.txt",
+  seek: "/NotFound/"
+})
+
+// Returns:
+// ---
+// filename: /path/to/file.txt
+// token: <sha256-hash>
+// offset: 1
+// limit: 40
+// seek: /NotFound/
+// error: No match found.
+// ---
+```
+
+### Error Handling
+
+```typescript
+// Invalid parameters
+const result = await text_patcher_text_read({ 
+  filename: "/path/to/file.txt",
+  offset: 0,
+  limit: 10
+})
+
+// Returns:
+// ---
+// filename: /path/to/file.txt
+// token: <sha256-hash>
+// offset: 0
+// limit: 10
+// error: invalid: offset must be >= 1
+// ---
+
+// File permission error
+const result = await text_patcher_text_read({ 
+  filename: "/restricted/file.txt"
+})
+
+// Returns:
+// ---
+// filename: /restricted/file.txt
+// token: null
+// error: Could not read file: EACCES: permission denied
+// ---
+```
+
 ## Implementation Notes
 
 - Use SHA-256 or similar cryptographic hash for token generation
@@ -316,6 +420,11 @@ const result = await text_patcher_text_patch(patch)
 - File encoding should default to UTF-8
 - Line endings should be preserved as-is from the original file
 - New files can be created when token is null
+- When `seek` is provided, the search begins at `offset` (default: 1) and ends at `end` (default: min(file_length, 99999 - limit))
+- The regex pattern in `seek` follows JavaScript regex syntax including flags (e.g., `/pattern/i` for case-insensitive)
+- Only the first matching line is returned; subsequent matches are ignored
+- The `end` parameter is never included in frontmatter output
+- Error responses use frontmatter format with `error` property and include filename, token, and relevant parameters
 
 ## Out of Scope (Current Version)
 
