@@ -9,12 +9,6 @@
 - **@research-repository** - Generates research results by coordinating file search
   and analysis. Provide a string for exact/semantic search or instructions/goals for
   deriving search queries.
-- **@files-find** - Finds files and directories matching given criteria using CLI
-  search tools (prefers `rg`). Returns markdown list of full file paths.
-- **@files-read** - Analyzes a file's contents and provides detailed information. Use
-  for file summaries, documenting modules/classes/functions, and extracting specific
-  line ranges and modifying contents. The subagent should be assigned exactly one
-  file. Use multiple agents for multiple files.
 - **@review** - Reviews code for quality and best practices. Use for code review,
   identifying bugs, performance issues, and security concerns.
 - **@web-search** - Performs web research using DuckDuckGo. Coordinates parallel page
@@ -23,28 +17,7 @@
 - **@web-fetch** - Fetches and analyzes webpage content. Use for retrieving
   information from specific URLs. The subagent should be assigned exactly one URL.
   Use multiple agents for multiple files.
-<<<<<<< HEAD
-- **@files-manager** - Creates or updates files based on instructions. Provide a file path
-  and instructions on what to write.  Instructions can be the exact content to write
-  or the steps to generate the content, including provide the names of other files to
-  read or calling specific subagents to gather content first.
-- **@docs** - Interactive writing collaborator for documentation, agent
-  instructions, and specifications. Works with the user to draft, outline, and
-  iteratively edit files. Use when you want guided, conversational document
-  authoring and review. The subagent may propose edits and, with user approval,
-  create or update files using the `write` and `edit` tools.
-||||||| parent of 762deb4 (Add attach functionality to demongrep tool and refactor search to use attached server state)
-- **@files-write** - Creates or updates files based on instructions. Provide a file path
-  and instructions on what to write.  Instructions can be the exact content to write
-  or the steps to generate the content, including provide the names of other files to
-  read or calling specific subagents to gather content first.
-- **@docs** - Interactive writing collaborator for documentation, agent
-  instructions, and specifications. Works with the user to draft, outline, and
-  iteratively edit files. Use when you want guided, conversational document
-  authoring and review. The subagent may propose edits and, with user approval,
-  create or update files using the `write` and `edit` tools.
-=======
-- **@files-write** - Creates or updates files based on instructions. Provide a file
+- **@files-manager** - Creates or updates files based on instructions. Provide a file
   path and instructions on what to write. Instructions can be the exact content to
   write or the steps to generate the content, including provide the names of other
   files to read or calling specific subagents to gather content first.
@@ -53,4 +26,3 @@
   files. Use when you want guided, conversational document authoring and review. The
   subagent may propose edits and, with user approval, create or update files using
   the `write` and `edit` tools.
->>>>>>> 762deb4 (Add attach functionality to demongrep tool and refactor search to use attached server state)
