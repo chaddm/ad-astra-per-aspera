@@ -1,98 +1,117 @@
-import { tool } from "@opencode-ai/plugin"
+ import { tool } from "@opencode-ai/plugin"
 import * as fs from "fs/promises"
 import * as path from "path"
 import crypto from "crypto"
 
-/**
- * Computes the SHA-256 hash (as hex string) of the supplied file contents.
- * @param contents - File contents (as string)
- * @returns SHA-256 hash in hex
- */
 function computeSha256(contents: string): string {
   return crypto.createHash("sha256").update(contents, "utf8").digest("hex")
 }
 
-/**
- * Formats the file as an array of rows (for patch/read APIs)
- * @param contents - The full file contents
- * @returns Array of lines as in the file (with line endings removed)
- */
 function splitLines(contents: string): string[] {
   return contents.replace(/\r\n?/g, "\n").split("\n")
 }
 
-/**
- * Validates and computes the effective (offset, limit) from any combination of (offset/limit) or (start/end), enforced as 1-based inclusive.
- * @param params - Input params
- * @returns offset, limit and errors if any.
- */
+function detectLineEnding(text: string): string {
+  const crlf = text.match(/\r\n/)
+  if (crlf) return "\r\n"
+  return "\n"
+}
+
+function frontmatterError({filename, token = null, offset, limit, start, seek, error}:
+  {filename: string, token?: string|null, offset?: number, limit?: number, start?: number, seek?: string, error: string}): string {
+  const out = [
+    `---`,
+    `filename: ${filename}`,
+    `token: ${token}`,
+    offset !== undefined ? `offset: ${offset}` : undefined,
+    limit !== undefined ? `limit: ${limit}` : undefined,
+    start !== undefined ? `start: ${start}` : undefined,
+    seek !== undefined ? `seek: ${seek}` : undefined,
+    `error: ${error.replace(/\n/g," ")}`,
+    `---`
+  ].filter(Boolean)
+  return out.join("\n")
+}
+
 function getRowRange(params: { offset?: number, limit?: number, start?: number, end?: number, defaultLimit?: number, maxLimit?: number, totalRows: number }) {
-  const { offset, limit, start, end, defaultLimit, maxLimit, totalRows } = params
-  let _offset: number = 1
-  let _limit: number = defaultLimit ?? 40
-  let error: string | null = null
+  const { offset, limit, start, end, defaultLimit, maxLimit, totalRows } = params;
+  let _offset: number = 1;
+  let _limit: number = defaultLimit ?? 40;
+  let error: string | null = null;
 
   if (start !== undefined || end !== undefined) {
     if (start !== undefined && start < 1) {
-      error = `invalid: start must be >= 1`
+      error = `invalid: start must be >= 1`;
     } else if (end !== undefined && end < 1) {
-      error = `invalid: end must be >= 1`
+      error = `invalid: end must be >= 1`;
     } else if (start !== undefined && end !== undefined && end < start) {
-      error = `invalid: end must be >= start`
+      error = `invalid: end must be >= start`;
     } else {
-      _offset = start ?? 1
-      _limit = (end !== undefined ? ((end - _offset) + 1) : (_limit))
+      _offset = start ?? 1;
+      _limit = end !== undefined ? end - _offset + 1 : _limit;
     }
   } else if (offset !== undefined || limit !== undefined) {
     if (offset !== undefined && offset < 1) {
-      error = `invalid: offset must be >= 1`
+      error = `invalid: offset must be >= 1`;
     } else if (limit !== undefined && limit < 0) {
-      error = `invalid: limit must be >= 0`
+      error = `invalid: limit must be >= 0`;
     } else {
-      _offset = offset ?? 1
-      _limit = limit ?? defaultLimit ?? 40
+      _offset = offset ?? 1;
+      _limit = limit ?? defaultLimit ?? 40;
     }
   }
+
   if (_limit > (maxLimit ?? 100)) {
-    error = `invalid: limit must not exceed ${(maxLimit ?? 100)}`
+    error = `invalid: limit must not exceed ${maxLimit ?? 100}`;
   }
-  // Adjust for file length
   if (_offset > totalRows + 1) {
-    error = `Offset/start (${_offset}) out of bounds (file has ${totalRows} rows)`
+    error = `Offset/start (${_offset}) out of bounds (file has ${totalRows} rows)`;
   }
-  if ((_offset - 1) + _limit > totalRows) {
-    _limit = totalRows - (_offset - 1)
+  if (_offset - 1 + _limit > totalRows) {
+    _limit = totalRows - (_offset - 1);
   }
-  if (_limit < 0) _limit = 0
-  return { offset: _offset, limit: _limit, start: start, end: end, error }
+  if (_limit < 0) _limit = 0;
+
+  return { offset: _offset, limit: _limit, start, end, error };
 }
 
-/**
- * Formats a row number as a zero-padded 5-digit string.
- */
 function padRowNumber(n: number): string {
   return n.toString().padStart(5, "0")
 }
 
-/**
- * Reads a file and returns frontmatter with SHA token and the selected rows.
- */
+function parseRegex(pat: string): RegExp|null {
+  if (/^\/.+\/[gimuy]*$/.test(pat)) {
+    const match = pat.match(/^\/(.+)\/(.*)$/)
+    if (!match) return null
+    try {
+      return new RegExp(match[1], match[2])
+    } catch {
+      return null
+    }
+  }
+  try {
+    return new RegExp(pat)
+  } catch {
+    return null
+  }
+}
+
 export const text_read = tool({
-  description: "Read a file with token and row numbering, supporting offset/limit/start/end.",
+  description: "Read a file with token and row numbering, supporting offset/limit/start/end and regex seek.",
   args: {
     filename: tool.schema.string().describe("File path to read (absolute or relative to CWD)"),
     offset: tool.schema.number().optional().describe("Row offset (1-based, optional)"),
     limit: tool.schema.number().optional().describe("Max rows to return (1-100, optional)"),
     start: tool.schema.number().optional().describe("Start row (1-based, optional, inclusive)"),
     end: tool.schema.number().optional().describe("End row (1-based, optional, inclusive)"),
+    seek: tool.schema.string().optional().describe("Regex pattern to seek and return rows from first match. Cannot use with start.")
   },
   async execute(args, context) {
-    const { filename, offset, limit, start, end } = args
+    const { filename, offset, limit, start, end, seek } = args
     let absPath = path.isAbsolute(filename) ? filename : path.resolve(process.cwd(), filename)
     let fileExists = true
     let contents: string = ""
     let lines: string[] = []
-
     try {
       contents = await fs.readFile(absPath, "utf8")
       lines = splitLines(contents)
@@ -101,15 +120,46 @@ export const text_read = tool({
         fileExists = false
         lines = []
       } else {
-        return `error: Could not read file: ${err.message}`
+        return frontmatterError({filename: absPath, error: `Could not read file: ${err.message}`})
       }
     }
     const totalRows = lines.length
-    const range = getRowRange({ offset, limit, start, end, defaultLimit: 40, maxLimit: 100, totalRows })
-    if (range.error) {
-      return `error: ${range.error}`
+    let _offset = offset
+    let _limit = limit ?? 40
+    let _start = start
+    let matchIdx: number|undefined = undefined
+    let seekUsed = false
+    if (seek !== undefined) {
+      if (start !== undefined) {
+        return frontmatterError({filename: absPath, error: "Cannot use seek with start parameter", seek})
+      }
+      const re = parseRegex(seek)
+      if (!re) {
+        return frontmatterError({filename: absPath, error: "Invalid seek regex", seek})
+      }
+      // Default offset for seek is 1-based (first line)
+      const fromOffset = offset !== undefined ? Math.max(Number(offset), 1) : 1
+      let toIdx = totalRows
+      if (end !== undefined) {
+        toIdx = Math.min(totalRows, end)
+      }
+      for (let i = fromOffset - 1; i < toIdx; i++) {
+        if (re.test(lines[i])) {
+          matchIdx = i
+          break;
+        }
+      }
+      if (matchIdx === undefined) {
+        return frontmatterError({filename: absPath, error: "No match found.", token: fileExists?computeSha256(contents):null, seek, offset: fromOffset, limit: _limit})
+      }
+      _offset = matchIdx + 1;
+      seekUsed = true
     }
-    const selected: string[] = []
+    const range = getRowRange({ offset: _offset, limit: _limit, start: _start, end: seekUsed ? undefined : end, defaultLimit: 40, maxLimit: 100, totalRows });
+    if (range.error) {
+      return frontmatterError({filename: absPath, error: range.error, offset: range.offset, limit: range.limit, start: range.start, seek})
+    }
+    let selected: string[] = [];
     for (let i = 0; i < range.limit; i++) {
       const idx = (range.offset - 1) + i
       if (idx < lines.length) {
@@ -125,18 +175,14 @@ export const text_read = tool({
       `offset: ${range.offset}`,
       `limit: ${range.limit}`,
       range.start !== undefined ? `start: ${range.start}` : undefined,
-      range.end !== undefined ? `end: ${range.end}` : undefined,
+      seek !== undefined ? `seek: ${seek}` : undefined,
       `---`
     ].filter(Boolean)
-    // Format with line numbers
     let numberedRows = selected.map((row, i) => `${padRowNumber(range.offset + i)}|${row}`)
     return [...meta, ...numberedRows].join("\n")
   }
 })
 
-/**
- * Type def for a per-patch operation.
- */
 interface PatchOp {
   offset?: number
   limit?: number
@@ -145,9 +191,6 @@ interface PatchOp {
   rows: string[]
 }
 
-/**
- * Type def for the text_patch tool parameters.
- */
 interface PatchRequest {
   filename: string
   token: string | null
@@ -160,10 +203,6 @@ function comparePatchOffsets(a: PatchOp, b: PatchOp): number {
   return ao - bo
 }
 
-/**
- * Detect if any patch ranges overlap (1-based, sorted patch list)
- * Returns error string if overlap found, or null if no overlap.
- */
 function detectOverlaps(sortedPatches: (PatchOp & { patchIdx: number, ogStart: number, ogEnd: number })[]): string | null {
   for (let i = 1; i < sortedPatches.length; i++) {
     const prev = sortedPatches[i - 1]
@@ -175,9 +214,6 @@ function detectOverlaps(sortedPatches: (PatchOp & { patchIdx: number, ogStart: n
   return null
 }
 
-/**
- * Applies multiple row-based patches to the file atomically, verifying SHA token.
- */
 export const text_patch = tool({
   description: "Apply one or more patches to a file based on offset/limit or start/end, with SHA integrity verification.",
   args: {
@@ -200,95 +236,81 @@ export const text_patch = tool({
     let fileExists = true
     let fileText: string = ""
     let fileWasNew = false
+    let lineEnding = "\n"
     try {
       fileText = await fs.readFile(absPath, "utf8")
       lines = splitLines(fileText)
+      lineEnding = detectLineEnding(fileText)
     } catch (err: any) {
       if (err.code === 'ENOENT') {
         fileExists = false
         lines = []
+        lineEnding = "\n"
       } else {
-        return `error: Could not read file: ${err.message}`
+        return frontmatterError({filename: absPath, error: `Could not read file: ${err.message}`})
       }
     }
-    // If token is not null, verify against file contents
     if (token !== null) {
       const sha = computeSha256(fileText)
       if (sha !== token) {
-        return "error: File has changed. Please read the file again."
+        return frontmatterError({filename: absPath, error: "File has changed. Please read the file again.", token})
       }
     } else if (!fileExists) {
       fileWasNew = true
     } else {
-      return "error: Token is null but file already exists."
+      return frontmatterError({filename: absPath, error: "Token is null but file already exists.", token})
     }
     const totalRows = lines.length
-    // Compute effective patch ranges, sort and check overlaps
     const normalized: (PatchOp & { patchIdx: number, ogStart: number, ogEnd: number, limit: number, offset: number })[] = []
     for (let i = 0; i < patches.length; i++) {
       const patch = patches[i]
-      // Compute range
       let rng = getRowRange({ ...patch, defaultLimit: 0, maxLimit: 1e6, totalRows })
       if (rng.error) {
-        return `error: Patch #${i+1}: ${rng.error}`
+        return frontmatterError({filename: absPath, error: `Patch #${i+1}: ${rng.error}`, token})
       }
-      // Compute start/end (1-based, inclusive)
       let ogStart = rng.offset
       let ogEnd = rng.offset + rng.limit - 1
-      if (rng.limit === 0) ogEnd = ogStart - 1 // insert or append
+      if (rng.limit === 0) ogEnd = ogStart - 1
       normalized.push({ ...patch, patchIdx: i, ogStart, ogEnd, limit: rng.limit, offset: rng.offset })
     }
-    // Sort by offset ASC
     normalized.sort((a, b) => a.ogStart - b.ogStart)
-    // Check for overlaps (skip pure inserts/appends where ogEnd < ogStart)
     const relevantPatches = normalized.filter(p => !(p.ogEnd < p.ogStart))
     const overlapErr = detectOverlaps(relevantPatches)
     if (overlapErr) {
-      return `error: ${overlapErr}`
+      return frontmatterError({filename: absPath, error: overlapErr, token})
     }
-    // Apply all patches atomically
     let patched: string[] = Array.from(lines)
     let shift = 0
     for (const patch of normalized) {
-      // Effective indices in current buffer after shift
       const origStartIdx = patch.ogStart - 1
       const origLimit = patch.limit
       const insertRows = patch.rows
-      // Adjust start for cumulative shift
       const curStartIdx = origStartIdx + shift
-      // If deletion (rows.length == 0): remove origLimit rows at curStartIdx
-      // If replace: remove origLimit, insert rows (could be shorter/longer/same)
-      // If insert: limit==0, just insert rows at origStartIdx+shift
-      // Bounds guards
       if (patch.limit < 0 || patch.offset < 1) {
-        return `error: Patch #${patch.patchIdx+1} invalid offset/limit`
+        return frontmatterError({filename: absPath, error: `Patch #${patch.patchIdx+1} invalid offset/limit`, token})
       }
       if (patch.limit > 0 && (origStartIdx < 0 || (origStartIdx + origLimit) > (patched.length + 1))) {
-        return `error: Patch #${patch.patchIdx+1} out of file bounds (rows ${patch.ogStart}-${patch.ogEnd})`
+        return frontmatterError({filename: absPath, error: `Patch #${patch.patchIdx+1} out of file bounds (rows ${patch.ogStart}-${patch.ogEnd})`, token})
       }
       patched.splice(curStartIdx, origLimit, ...insertRows)
       shift += (insertRows.length - origLimit)
     }
-    // Ensure parent directory exists for new files
     if (fileWasNew) {
       const parentDir = path.dirname(absPath)
       await fs.mkdir(parentDir, { recursive: true })
     }
     try {
-      await fs.writeFile(absPath, patched.join("\n"), { encoding: "utf8" })
+      await fs.writeFile(absPath, patched.join(lineEnding), { encoding: "utf8" })
       if (fileWasNew) {
         return "success: File created successfully"
       }
       return "success: Patches applied successfully"
     } catch (err: any) {
-      return `error: Could not write file: ${err.message}`
+      return frontmatterError({filename: absPath, error: `Could not write file: ${err.message}` , token})
     }
   }
 })
 
-/**
- * The default tool exports info about sub-tools and usage.
- */
 const text_patcher_default = tool({
   description: "Handle file reading and writing through operational transforms",
   args: {},

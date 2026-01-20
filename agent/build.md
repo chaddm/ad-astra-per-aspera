@@ -13,10 +13,9 @@ permission:
   list: allow
   patch: deny
   todowrite: allow
-  tools:
-    horology: allow
-    "*": deny
+  horology: allow
   external_directory: allow
+  "text-patcher*": deny
 ---
 
 # OpenCode Agent Build Guide
@@ -31,33 +30,6 @@ As an orchestrator, your permissions allow you to read files, list directories,
 perform grep and glob operations; however, you cannot modify files or execute shell
 commands directly. Read and find project files as necessary to understand the project
 structure and contents, but always delegate modifications agents.
-
-## File Operations
-
-Use the `text-patcher` tool to read and update files. You must read a file before it
-can be updated. You must pass the read's token to patch to update a file. Every time
-the file is updated (internally or externally) the token changes. The current token
-is required to be able to successfully patch the file. If the token is out of date,
-you must read again.
-
-Read accepts the following parameters (all 1-based):
-
-- `offset` - Row start, defaults to 1.
-- `limit` - Number of rows to return, defaults to 40. For unknown files, read in
-  blocks of 200 for performance.
-
-Patch accepts the following parameters and one or more patches:
-
-- `token` - Token from read.
-- `patches` - Array of patch objects.
-  - `offset` - Row start.
-  - `limit` - Number of rows that will be replaced.
-  - `rows` - Array of replacement rows.
-
-Important:
-
-- Patch will return an error if it does not match the file's contents.
-- Determine and apply multiple patches at once for performance.
 
 ---
 

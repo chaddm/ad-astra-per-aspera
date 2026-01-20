@@ -5,11 +5,11 @@ description:
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:
-  external_directory: deny
-  edit: deny
-  patch: deny
-  write: deny
-  read: deny
+  external_directory: allow
+  edit: allow
+  patch: allow
+  write: allow
+  read: allow
   grep: allow
   glob: allow
   list: allow
@@ -25,11 +25,9 @@ permission:
     "mv": allow
     "*": deny
   todowrite: allow
-  tools:
-    utilities_uuid: allow
-    horology: allow
-    text-patcher: allow
-    "*": deny
+  utilities_uuid: allow
+  horology: allow
+  text-patcher: deny
 ---
 
 You are responsible for manipulating files based on instructions provided. You have
@@ -44,37 +42,8 @@ full permissions to:
   - Determining file existence and details using `file`
   - Creating directories using `mkdir -p`.
   - Deleting files or directories using `rmdir` or `rm -rf`.
-- **text-patcher tool** - Use the `text-patcher` tool to read and/or update files.
-  - `text_patcher_text_read(params)` - Read file contents with integrity token
-    - **Parameters**: `filename` (required), optional: `offset`/`limit` (1-based) or
-      `start`/`end` (1-based, inclusive), `seek` (regex pattern)
-    - **Returns**: YAML frontmatter with `token` (SHA hash or null for new files),
-      `filename`, `offset`, `limit`, optional `error`
-    - **Defaults**: First 40 rows; max 100 rows per read
-    - **Examples**:
-      - Read first 40 rows: `{ filename: "path/file.txt" }`
-      - Read rows 10-30: `{ filename: "path/file.txt", offset: 10, limit: 20 }` or
-        `{ filename: "path/file.txt", start: 10, end: 30 }`
-      - Find pattern:
-        `{ filename: "path/file.txt", seek: "/^function\\s+\\w+/", limit: 10 }`
-  - `text_patcher_text_patch(params)` - Apply atomic patches to files with integrity
-    verification
-    - **Parameters**: `filename`, `token` (from text_read), `patches` (array of patch
-      objects)
-    - **Patch format**: Each patch has `offset`/`limit` or `start`/`end` (1-based)
-      and `rows` (array of strings)
-    - **Operations**: Insert (rows.length > limit), replace (equal), delete
-      (rows.length < limit or empty array)
-    - **Integrity**: All patches reference original row numbers; rejected if file
-      changed (SHA mismatch)
-    - **New files**: Use `token: null` to create new files
-    - **Examples**:
-      - Replace rows 10-14:
-        `{ filename: "path/file.txt", token: "<sha>", patches: [{ offset: 10, limit: 5, rows: ["line1", "line2"] }] }`
-      - Delete rows 5-10:
-        `{ filename: "path/file.txt", token: "<sha>", patches: [{ offset: 5, limit: 6, rows: [] }] }`
-      - Create file:
-        `{ filename: "new.txt", token: null, patches: [{ offset: 1, limit: 0, rows: ["content"] }] }`
+- **Read and Write files** - Always validate before stopping that any updates have
+  been completed.
 
 > Important: Before deleting a file or directory, you must validate the directory is
 > underneath the current working directory by using the `pwd` and `file` bash

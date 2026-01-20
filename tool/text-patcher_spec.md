@@ -173,16 +173,23 @@ patches:
 - [x] Returns formatted output with 5-digit row numbers
 - [x] Returns YAML frontmatter with metadata including token
 - [x] Returns error for invalid row ranges
-- [ ] Accepts optional `seek` parameter with JavaScript regex pattern
-- [ ] `seek` searches from `offset` to `end` line range
-- [ ] `seek` returns first matching line as new `offset`
-- [ ] `seek` returns `limit` lines from matched line
-- [ ] `seek` cannot be combined with `start` (returns error)
-- [ ] `seek` returns frontmatter with error "No match found." when no match
-- [ ] `end` parameter is never returned in frontmatter
-- [ ] All errors return frontmatter format with `error` property
-- [ ] Error responses include `token` (SHA hash or null)
+- [x] Accepts optional `seek` parameter with JavaScript regex pattern
+- [x] `seek` searches from `offset` to `end` line range
+- [x] `seek` returns first matching line as new `offset`
+- [x] `seek` returns `limit` lines from matched line
+- [x] `seek` cannot be combined with `start` (returns error)
+- [x] `seek` returns frontmatter with error "No match found." when no match
+- [ ] `seek` supports regex flags (e.g., `/pattern/i` for case-insensitive)
+- [ ] `seek` default end is `min(file_length, 99999 - limit)` when not specified
+- [ ] `seek` ignores subsequent matches after first match
+- [x] `end` parameter is never returned in frontmatter
+- [x] All errors return frontmatter format with `error` property
+- [x] Error responses include `token` (SHA hash or null)
 - [ ] Maximum returned line number is 99999
+- [ ] Returns error for permission denied when reading file
+- [ ] Returns error for invalid file paths
+- [ ] Handles Unicode and special characters in file content
+- [ ] All error responses include relevant parameters in frontmatter
 
 ### `text_patch`
 
@@ -203,6 +210,11 @@ patches:
 - [x] Handles patches that extend file length (insert)
 - [x] Handles patches that reduce file length (delete)
 - [x] Handles patches with empty rows array (pure deletion)
+- [ ] Handles adjacent patches (touching but not overlapping)
+- [ ] Returns error for permission denied when patching file
+- [ ] Returns error for patch with `start > end`
+- [ ] Handles patching at end of file (inserting after last line)
+- [ ] Rejects creating file with `token: null` but invalid patches
 
 ### General
 
