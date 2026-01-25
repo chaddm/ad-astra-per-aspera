@@ -47,6 +47,8 @@ technical documentation for being able to develop agents, commands, and tools. W
 developing agents, commands, custom tools, specification files, tests, themes, etc,
 always read related technical documentation under the `docs/` directory.
 
+---
+
 Notable directories are:
 
 - `docs/opencode`: Directory containing technical documentation related to OpenCode
@@ -112,6 +114,13 @@ from the agent if you are unsure how to phrase your request.
   integrations.
 - **ollama**: Manages the host's Ollama models, including downloading models,
   deleting models, and creating custom configurations.
+- **@docker-manager**: Reports on and manages Docker containers, images, networks,
+  volumes, and Docker Compose stacks. Unless specifically instructed, assume listing
+  and manipulating stacks means using docker-manager.
+- **@things3-manager**: Manages MacOS Things3 (aka "Things") application, a user task
+  manager that manages tasks in groups of areas and projects. Can retrieve areas and
+  projects with filtering, get detailed information on projects and to-dos, and
+  update to-do properties.
 
 ---
 
