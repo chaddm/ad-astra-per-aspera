@@ -1,0 +1,13 @@
+#!/usr/bin/env osascript
+
+tell application "Things3"
+    set projectID to "MQnDdHSoUqPbaxxU9s38LM"
+    set allProjects to projects whose id is projectID
+    if (count of allProjects) = 0 then
+        return "Error: Project not found"
+    end if
+    set project to first item of allProjects
+    set project_name to name of project
+    set notes to notes of project
+    return "Project Name: " & project_name & ", Notes: " & notes
+end tell
