@@ -1,3 +1,8 @@
+# Project
+
+# For untracked files
+files/
+
 # Logs
 logs
 *.log
