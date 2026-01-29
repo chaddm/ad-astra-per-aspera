@@ -33,10 +33,18 @@ This file is NOT to be used as the source of truth. Always use `docker` and
 `docker compose` commands to get the current state of the system. The `~/.docker`
 directory serves as a backup and quick reference.
 
+### Docker Compose Stacks Location
+
+- **Stacks directory location**: `~/Workspace/stacks/`
+- All Docker Compose stacks are stored in subdirectories within this location
+- Each subdirectory represents a single stack with its compose file and related
+  configuration
+
 ### Structure of `stacks.yaml`
 
-The `~/.docker/stacks.yaml` file uses YAML format where each entry represents a Docker
-Compose stack. Below is a detailed explanation of the structure for each stack entry:
+The `~/.docker/stacks.yaml` file uses YAML format where each entry represents a
+Docker Compose stack. Below is a detailed explanation of the structure for each stack
+entry:
 
 #### Fields in Each Stack Entry
 
@@ -89,8 +97,8 @@ stacks:
 
 #### Important Notes
 
-1. **Valid YAML**: The file must use valid YAML syntax with proper indentation; errors will prevent
-   proper parsing.
+1. **Valid YAML**: The file must use valid YAML syntax with proper indentation;
+   errors will prevent proper parsing.
 2. **Updating `lastUpdated`**: Always update the `lastUpdated` field whenever the
    Docker manager modifies or checks the stack.
 3. **Image Versioning**: Specify the full version tags for all Docker images (do not
@@ -204,3 +212,34 @@ Volumes provide persistent storage for containers, surviving container removal.
 - `docker system prune`: Removes unused data (containers, networks, images)
 - `docker system prune -a --volumes`: Aggressive cleanup (includes all unused images
   and volumes)
+
+## Listing All Exposed Ports
+
+To list all exposed ports for Docker Compose stacks in `~/Workspace/stacks/` and
+return them in table format:
+
+1. Scan all subdirectories in `~/Workspace/stacks/` for docker-compose files:
+
+   ```bash
+   find ~/Workspace/stacks -maxdepth 2 -name "docker-compose.y*ml" -o -name "compose.y*ml"
+   ```
+
+2. For each compose file, extract:
+   - Stack name (directory name)
+   - Service names
+   - Exposed ports (format: `host:container`)
+
+3. Return results as a markdown table:
+   ```markdown
+   | Stack Name | Services | Exposed Ports |
+   | ---------- | -------- | ------------- |
+   | stack-name | service  | 8080:80       |
+   ```
+
+**Example Output:**
+
+| Stack Name | Services   | Exposed Ports |
+| ---------- | ---------- | ------------- |
+| dockge     | dockge     | 9999:5001     |
+| dozzle     | dozzle     | 9998:8080     |
+| open-webui | open-webui | 9000:8080     |
