@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { calculate } from "../tool/calculator";
+import calculate from "../tool/calculator";
 import { spawn } from "bun";
 
 describe("Calculator Tool", () => {
@@ -54,5 +54,39 @@ describe("Calculator Tool", () => {
   test("square root: \\sqrt{16}", async () => {
     const result = await calculate.execute({ expression: "\\sqrt{16}" });
     expect(result).toBe(4);
+  });
+
+  test("error: non-numeric variable value", async () => {
+    try {
+      await calculate.execute({ 
+        expression: "x + 1", 
+        variables: { x: "not a number" as any } 
+      });
+      expect.unreachable("Should have thrown");
+    } catch (err: any) {
+      expect(err.message).toContain("must be a number");
+    }
+  });
+
+  test("error: clear message for invalid LaTeX", async () => {
+    try {
+      await calculate.execute({ expression: "\\invalid{syntax}" });
+      expect.unreachable("Should have thrown");
+    } catch (err: any) {
+      expect(err.message).toMatch(/invalid.*syntax|LaTeX|parse/i);
+    }
+  });
+
+  test("error: clear message for undefined variable", async () => {
+    try {
+      await calculate.execute({ expression: "x + y", variables: { x: 5 } });
+      expect.unreachable("Should have thrown");
+    } catch (err: any) {
+      expect(err.message).toMatch(/undefined.*variable|variable.*y.*not.*defined/i);
+    }
+  });
+
+  test("error: empty expression", async () => {
+    await expect(calculate.execute({ expression: "" })).rejects.toThrow(/empty/i);
   });
 });

@@ -17,6 +17,15 @@ function validateExpression(expression: unknown): asserts expression is string {
   }
 }
 
+function validateVariables(variables?: Record<string, unknown>): void {
+  if (!variables) return;
+  for (const [key, value] of Object.entries(variables)) {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      throw new Error(`Variable '${key}' must be a number, got ${typeof value}`);
+    }
+  }
+}
+
 /**
  * Calculate the result of a LaTeX mathematical expression
  * 
@@ -31,7 +40,7 @@ function validateExpression(expression: unknown): asserts expression is string {
  * @example
  * calculate.execute({ expression: "\\frac{1}{2} + \\frac{1}{4}" }) // Returns: 0.75
  */
-export const calculate = tool({
+export default tool({
   description: "Evaluate mathematical expressions written in LaTeX syntax, with support for variable substitution",
   args: {
     expression: tool.schema.string().describe("LaTeX-compliant mathematical expression string"),
@@ -39,13 +48,33 @@ export const calculate = tool({
   },
   async execute(args) {
     validateExpression(args.expression);
-    
+    validateVariables(args.variables);
     const { parseTex } = require("tex-math-parser");
-    
-    const tree = parseTex(args.expression);
-    const compiledExpression = tree.compile();
+    let tree;
+    try {
+      tree = parseTex(args.expression);
+    } catch (err: any) {
+      throw new Error(`Invalid LaTeX syntax: ${err.message}`);
+    }
+    let compiledExpression;
+    try {
+      compiledExpression = tree.compile();
+    } catch (err: any) {
+      throw new Error(`Invalid LaTeX syntax: ${err.message}`);
+    }
     const scope = args.variables || {};
-    const result = compiledExpression.evaluate(scope);
-    return result;
+    try {
+      const result = compiledExpression.evaluate(scope);
+      return result;
+    } catch (err: any) {
+      if (err.message && /Undefined symbol/i.test(err.message)) {
+        // Try to extract variable name
+        const match = err.message.match(/Undefined symbol ([a-zA-Z0-9_]+)/);
+        const varName = match ? match[1] : "unknown";
+        throw new Error(`Undefined variable: ${varName}`);
+      }
+      throw new Error(`Mathematical error: ${err.message}`);
+    }
   },
 });
+
