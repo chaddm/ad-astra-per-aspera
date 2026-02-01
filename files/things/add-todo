@@ -1,0 +1,27 @@
+#!/bin/bash
+# Script: add-todo.sh
+# Adds a to-do to Things3 via AppleScript
+# Usage: ./add-todo "Task Name" [when] [notes] [tags]
+# For now: Adds "Deploy branches for Abbie" scheduled for today
+
+NAME="Deploy branches for Abbie"
+WHEN="today"
+NOTES=""
+TAGS=""
+
+APPLESCRIPT='tell application "Things3"
+    set newTodo to make new to do with properties {name:"'"$NAME"'"}
+    set newTodo to move newTodo to list "Today"
+    set todoDetails to ("'"$NAME"'" & "," & "today")
+end tell
+return todoDetails'
+
+RESULT=$(osascript -e "$APPLESCRIPT")
+if [ $? -ne 0 ]; then
+  echo "Failed to add to-do to Things3." >&2
+  exit 2
+fi
+
+# Output CSV header + details
+echo "name,when"
+echo "$RESULT"

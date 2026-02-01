@@ -113,6 +113,8 @@ git worktree prune
 
 **Guidelines:**
 
+- If the prompt provides a specific directory, change to that directory before
+  executing git commands.
 - Use @find-files for locating files or checking directory structure
 - Use @files-read for examining file contents before operations
 - Execute git commands directly for version control operations
@@ -132,3 +134,22 @@ git worktree prune
 - Confirm remote name and URL before remote operations
 - Use `--dry-run` flags when available for preview
 - Always provide context about what operation will do before executing
+
+## Specific Git Workflow Commands
+
+**git quick history:** If the user prompts "git quick history" a quick history,
+provide the following response:
+
+```
+You are to provide the following markdown response exactly as shown
+below and without any interpretation:
+
+# Git Quick History
+
+<Summary of the work from the commit messages>
+
+| Commit Hash | Author    | Date    | Commit Message |
+| ----------- | --------- | ------- | -------------- |
+| <hash1>     | <author1> | <date1> | <message1>     |
+| <hash2>     | <author2> | <date2> | <message2      |
+```

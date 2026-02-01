@@ -16,11 +16,7 @@
     },
     "sequential-thinking": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "playwright": {
       "type": "local",
@@ -29,11 +25,19 @@
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "eq5FjSJdSORqP5rJsWdqK4qyiULfxgdPU83LyKJoszU"
       }
     },
-    "demongrep" : {
+    "demongrep": {
       "type": "local",
-      "command": [ "/Users/cdumler/.bin/demongrep", "mcp", "/Users/cdumler/.config/opencode" ]
+      "command": [
+        "/Users/cdumler/.bin/demongrep",
+        "mcp",
+        "/Users/cdumler/.config/opencode"
+      ]
     }
   },
-  "agent": {
+  "agent": {},
+  "model": "github-copilot/gpt-4.1",
+  "small_model": "github-copilot/gpt-4.1",
+  "watcher": {
+    "ignore": ["**/node_modules/**", "**/.git/**"]
   }
 }
