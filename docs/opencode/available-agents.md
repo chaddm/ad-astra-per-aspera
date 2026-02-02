@@ -23,34 +23,13 @@
 - **@web-fetch** - Fetches and analyzes webpage content. Use for retrieving
   information from specific URLs. The subagent should be assigned exactly one URL.
   Use multiple agents for multiple files.
-<<<<<<< HEAD
-- **@files-manager** - Creates or updates files based on instructions. Provide a file path
-  and instructions on what to write.  Instructions can be the exact content to write
-  or the steps to generate the content, including provide the names of other files to
-  read or calling specific subagents to gather content first.
+- **@file** - Creates or updates a single file based on instructions. Provide a file path
+  and instructions on what to write. Instructions can be the exact content to write
+  or the steps to generate the content, including providing the names of other files to
+  read or calling specific subagents to gather content first. This agent operates on a
+  SINGLE FILE at a time.
 - **@docs** - Interactive writing collaborator for documentation, agent
   instructions, and specifications. Works with the user to draft, outline, and
   iteratively edit files. Use when you want guided, conversational document
   authoring and review. The subagent may propose edits and, with user approval,
   create or update files using the `write` and `edit` tools.
-||||||| parent of 762deb4 (Add attach functionality to demongrep tool and refactor search to use attached server state)
-- **@files-write** - Creates or updates files based on instructions. Provide a file path
-  and instructions on what to write.  Instructions can be the exact content to write
-  or the steps to generate the content, including provide the names of other files to
-  read or calling specific subagents to gather content first.
-- **@docs** - Interactive writing collaborator for documentation, agent
-  instructions, and specifications. Works with the user to draft, outline, and
-  iteratively edit files. Use when you want guided, conversational document
-  authoring and review. The subagent may propose edits and, with user approval,
-  create or update files using the `write` and `edit` tools.
-=======
-- **@files-write** - Creates or updates files based on instructions. Provide a file
-  path and instructions on what to write. Instructions can be the exact content to
-  write or the steps to generate the content, including provide the names of other
-  files to read or calling specific subagents to gather content first.
-- **@docs** - Interactive writing collaborator for documentation, agent instructions,
-  and specifications. Works with the user to draft, outline, and iteratively edit
-  files. Use when you want guided, conversational document authoring and review. The
-  subagent may propose edits and, with user approval, create or update files using
-  the `write` and `edit` tools.
->>>>>>> 762deb4 (Add attach functionality to demongrep tool and refactor search to use attached server state)

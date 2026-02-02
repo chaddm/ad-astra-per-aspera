@@ -196,3 +196,45 @@ Use these resources to understand and configure various aspects of OpenCode.
    - **Content**: Overview of tool management in OpenCode, including configuration,
      enabling/disabling, and the difference between built-in and custom tools.
    - **When to Read**: When configuring or managing tools for agents in OpenCode.
+
+## Available Tools
+
+Built-in Tools
+
+File Operations:
+
+- read - Read file contents from filesystem
+- write - Create new files or overwrite existing ones
+- edit - Modify files using exact string replacements
+- patch - Apply difference patches to files
+
+Search & Discovery:
+
+- grep - Search file contents with regex patterns
+- glob - Find files by pattern matching (e.g., \*_/_.js)
+- list - List files and directories in a path
+
+Execution:
+
+- bash - Execute shell commands in your environment
+
+Task Management:
+
+- todowrite - Create/update structured todo lists for tracking tasks
+- todoread - Read the current todo list state
+
+External:
+
+- webfetch - Fetch and convert web pages to text/markdown/html
+- skill - Access specialized skills
+
+Utilities:
+
+- horology - Get current date/time in human-readable format
+
+Additional Tool Categories
+
+MCP Tools (via Model Context Protocol servers):
+
+- mcp-context7 - Resolve library IDs and query documentation
+- Custom MCP servers can be added per project
