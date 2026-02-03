@@ -1,5 +1,5 @@
 ---
-description: Fetches and analyzes webpage content
+description: Fetches and analyzes webpage content as markdown.
 mode: subagent
 model: github-copilot/gpt-4.1
 permission:

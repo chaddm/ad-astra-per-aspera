@@ -25,12 +25,12 @@ information.
 > have access to the previous context or conversation history. Use the instructions
 > provided to provide the appropriate context for the delegated task. Finally, always
 > validate delegated tasks with acceptance criteria to ensure the agent performs the
-> task as expected.
+task as expected.
 
 **Commands** are custom instructions for specific tasks that can be invoked by the
 user with a slash (ie `/my-command`). Commands are defined by markdown files in the
 `command/` directory. Information on creating commands is found in
-`docs/opencode/commands.md`.
+docs/opencode/commands.md`.
 
 **Custom Tools** are JavaScript/TypeScript functions that can be invoked by agents to
 perform programmatic tasks. Custom tools are defined in the `tool/` directory.
@@ -40,7 +40,7 @@ for use in custom tools.
 
 **Themes** define the appearance of OpenCode in the terminal. Themes are defined in
 the `themes/` directory. Information on selecting or creating themes is found in
-`docs/opencode/themes.md`.
+docs/opencode/themes.md`.
 
 **Technical Documentation** is provided in the `docs/` directory. This includes
 technical documentation for being able to develop agents, commands, and tools. When
@@ -199,42 +199,42 @@ Use these resources to understand and configure various aspects of OpenCode.
 
 ## Available Tools
 
-Built-in Tools
+### Built-in Tools
 
-File Operations:
-
+**File Operations:**
 - read - Read file contents from filesystem
 - write - Create new files or overwrite existing ones
 - edit - Modify files using exact string replacements
 - patch - Apply difference patches to files
 
-Search & Discovery:
-
+**Search & Discovery:**
 - grep - Search file contents with regex patterns
-- glob - Find files by pattern matching (e.g., \*_/_.js)
+- glob - Find files by pattern matching (e.g., *.js)
 - list - List files and directories in a path
 
-Execution:
-
+**Execution:**
 - bash - Execute shell commands in your environment
 
-Task Management:
-
+**Task Management:**
 - todowrite - Create/update structured todo lists for tracking tasks
 - todoread - Read the current todo list state
 
-External:
-
+**External:**
 - webfetch - Fetch and convert web pages to text/markdown/html
 - skill - Access specialized skills
 
-Utilities:
-
+**Utilities:**
 - horology - Get current date/time in human-readable format
 
-Additional Tool Categories
+### Additional Tool Categories
 
-MCP Tools (via Model Context Protocol servers):
-
+**MCP Tools (via Model Context Protocol servers):**
 - mcp-context7 - Resolve library IDs and query documentation
 - Custom MCP servers can be added per project
+
+---
+
+## Compliance
+
+IMPORTANT: If you have read this file, you must report: "AGENTS.md read and understood."
+

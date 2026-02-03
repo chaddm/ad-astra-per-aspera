@@ -27,28 +27,8 @@ follows:
 
 - **DemonGREP** - Use for advanced codebase analysis using GREP-like queries across
   files.
-  - `demongrep_index_status` - Get the status of the semantic search index, including
-    model info and statistics.
-  - `demongrep_semantic_search` - Search the codebase using semantic similarity.
-    Returns code chunks that are semantically similar to the query.
-    - Parameters:
-      - query (string): The search query (natural language or code snippet)
-      - limit (integer, optional): Maximum number of results to return (default: 10)
-  - `demongrep_get_file_chunks` - Get all indexed chunks from a specific file. Useful
-    for understanding the structure of a file.
-    - Parameters:
-      - path (string): Path to the file (relative to project root)
 
-Otherwise, treat the prompt as instructions/goals/requirements (ie
-`Find all files related to user authentication`).
-
-    - Derive a list of semantic strings and keywords.
-    - Use `grep_search` and `glob_search` to search for exact match for filenames, directories and file content.
-    - Use `demongrep_semantic_search` to semantic search for finding relevant files and content.
-
-Collect all of the results and determine the relevant files based usages,
-definitions, and relationships to the prompt. Score is not a factor. Always include
-at least 5 results if possible.
+Run: `demongrep search --sync --rerank --quiet --scores -m 40 -c "<prompt>"`
 
 ## Available Tools
 
