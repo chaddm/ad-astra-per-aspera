@@ -153,3 +153,20 @@ below and without any interpretation:
 | <hash1>     | <author1> | <date1> | <message1>     |
 | <hash2>     | <author2> | <date2> | <message2      |
 ```
+
+## Commit Comment Guidelines
+
+When composing commit comments, follow these guidelines:
+
+1. Determine the list of files changed and the nature of the changes.
+2. Summarize the changes in a concise and descriptive manner grouped by
+   functionality.
+3. Follow standard commit message conventions:
+
+- Use the imperative mood (e.g., "Fix bug" instead of "Fixed bug" or "Fixes bug")
+- Keep the subject line concise (75 characters or less)
+- Separate the subject line from the body with a blank line
+- Provide a detailed body explaining the what, why, and how if necessary
+- Reference relevant issues or tickets if applicable
+- Use bullet points or lists for clarity in the body
+- Proofread for grammar and spelling

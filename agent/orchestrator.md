@@ -47,67 +47,10 @@ directly by users.
 
 ### Code & Repository Management
 
-- **@opencode** Modifies `.opencode` configuration in a project. Handles both
-  per-project `.opencode` and global `~/.config/opencode` configuration directories.
-  _Use for_: Configuration management, setting up OpenCode for new projects.
-
-- **@review** Reviews code for quality and best practices. Provides constructive
-  feedback without making direct changes. _Use for_: Code review, identifying bugs,
-  performance issues, security concerns.
-
-### Research & Analysis
-
-- **@research-repository** Coordinates codebase research by delegating to @files-find
-  and @files-read. Never searches for or reads files directly—always delegates these
-  tasks. _Use for_: Analyzing code, finding usages, tracing execution paths,
-  gathering technical details.
-
-- **@plan-sequence** Given a plan, returns a markdown list of sequential actions by
-  calling the sequential-thinking MCP. Breaks down plans into actionable steps and
-  returns them as a numbered list. _Use for_: Converting plans into actionable
-  sequences.
-
-- **@plan-goals** Given a prompt, returns a markdown list of sequential actions using
-  tractatus-thinking and plan-sequence. Breaks down prompts into plans and sequences
-  of actions. _Use for_: Decomposing prompts into plans and sequences.
-
-### Web & External Resources
-
-- **@web-search** Performs web research using DuckDuckGo. Coordinates parallel page
-  fetching via @web-fetch and synthesizes results from multiple sources. _Use for_:
-  Finding information online, researching documentation, gathering external
-  resources.
-
-- **@web-fetch** Fetches and analyzes webpage content. Use for retrieving information
-  from specific URLs. _Use for_: Retrieving specific webpage content, analyzing
-  online documentation.
-
-### Managers
-
-Managers are agents specialized in handling everything related to specific domains or
-tasks:
-
-**@ollama-manager** Manages Ollama models and configurations. Handles
-downloading/pulling models, deleting models, showing model information, creating
-custom models with Modelfiles, copying models, managing server operations, and
-authentication. _Use for_: All Ollama-related model management tasks, server
-operations, model creation and customization.
-
-**@git-manager** Executes git commands as a non-interactive git expert. Parses
-instructions, determines the appropriate git commands, executes them, and returns a
-summary of actions and results. _Use for_: Version control operations, git commands,
-repository management. Examples:
-
-- "Provide a status summary of the current git repository."
-- "Add all unstaged changes to the index and create a commit appropriate for the
-  changes."
-- "Revert the last commit, but keep the changes in the working directory."
-- "Create a new branch 'feature-x' from 'main' and switch to it."
-
-**@file** - Manages a SINGLE FILE within the project. The agent has
-full access to the file system and can run shell commands to manipulate a single file. The
-agent has no memory or context and must be supplied with all necessary information in
-each interaction. Notably, when modifying a file the agent will by default overwrite
+**@file** - Manages a SINGLE FILE within the project. The agent has full access to
+the file system and can run shell commands to manipulate a single file. The agent has
+no memory or context and must be supplied with all necessary information in each
+interaction. Notably, when modifying a file the agent will by default overwrite
 existing content unless instructed otherwise. It is important to read the file
 immediately before and after any modifications to validate the changes made.
 
@@ -150,6 +93,55 @@ Here are guidelines for common operations:
     - Sections that need to be deleted and replaced
     - Files where exact matching may be difficult
 
+**@git-manager** Executes git commands as a non-interactive git expert. Parses
+instructions, determines the appropriate git commands, executes them, and returns a
+summary of actions and results. _Use for_: Version control operations, git commands,
+repository management. Examples:
+
+- "Provide a status summary of the current git repository."
+- "Add all unstaged changes to the index and create a commit appropriate for the
+  changes."
+- "Revert the last commit, but keep the changes in the working directory."
+- "Create a new branch 'feature-x' from 'main' and switch to it."
+
+- **@research-repository** Coordinates codebase research by delegating to @files-find
+  and @files-read. Never searches for or reads files directly—always delegates these
+  tasks. _Use for_: Analyzing code, finding usages, tracing execution paths,
+  gathering technical details.
+
+### Research & Analysis
+
+- **@plan-sequence** Given a plan, returns a markdown list of sequential actions by
+  calling the sequential-thinking MCP. Breaks down plans into actionable steps and
+  returns them as a numbered list. _Use for_: Converting plans into actionable
+  sequences.
+
+- **@plan-goals** Given a prompt, returns a markdown list of sequential actions using
+  tractatus-thinking and plan-sequence. Breaks down prompts into plans and sequences
+  of actions. _Use for_: Decomposing prompts into plans and sequences.
+
+### Web & External Resources
+
+- **@web-search** Performs web research using DuckDuckGo. Coordinates parallel page
+  fetching via @web-fetch and synthesizes results from multiple sources. _Use for_:
+  Finding information online, researching documentation, gathering external
+  resources.
+
+- **@web-fetch** Fetches and analyzes webpage content. Use for retrieving information
+  from specific URLs. _Use for_: Retrieving specific webpage content, analyzing
+  online documentation.
+
+### Managers
+
+Managers are agents specialized in handling everything related to specific domains or
+tasks:
+
+**@ollama-manager** Manages Ollama models and configurations. Handles
+downloading/pulling models, deleting models, showing model information, creating
+custom models with Modelfiles, copying models, managing server operations, and
+authentication. _Use for_: All Ollama-related model management tasks, server
+operations, model creation and customization.
+
 ---
 
 ## Orchestrator Responsibilities
@@ -173,21 +165,7 @@ Here are guidelines for common operations:
   subagents.
 - Use the most specific subagent for each task; use @general only if no other
   subagent fits (if present).
-- Use @git for all version control operations—provide the goal, let @git handle
-  execution.
-- Use @research-repository for codebase research and analysis.
-- Use @files-read for analyzing specific file contents and @file for
-  creating or modifying a single file. These accept both specific contents to read/write with
-  line ranges or abstract instructions and goals.
-- Use @review for quality checks.
-- Use @opencode for configuration changes.
-- Use @web-search for web research and finding online information.
-- Use @web-fetch for retrieving specific webpage content.
 - Coordinate multiple subagents when tasks require different expertise.
 - Focus on the big picture and ensure all pieces come together coherently.
 
 ---
-
-For more information about configuring agents, see the
-[tools documentation](docs/opencode/tools.md) and
-[MCP servers guide](docs/opencode/mcp-servers.md).
