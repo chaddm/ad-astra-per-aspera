@@ -1,7 +1,6 @@
 ---
 description: "Manages Homebrew package manager operations on macOS"
 mode: "subagent"
-model: "github-copilot/gpt-4o"
 temperature: 0.1
 permission:
   write: allow

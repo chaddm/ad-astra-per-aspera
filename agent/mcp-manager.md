@@ -1,7 +1,6 @@
 ---
 description: Model Context Protocol (MCP) configuration manager and curator
 mode: primary
-model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:
   write: allow
@@ -59,14 +58,14 @@ Short description — what this MCP provides and typical use-cases.
 Provide the minimum configuration needed to connect and run this MCP server. Use code
 fences for config examples.
 
-````json
+```json
 {
   "host": "mcp.example.com",
   "port": 1234,
   "protocol": "https",
   "api_key": "<REDACTED>"
 }
-````
+```
 
 Note: Do not store secrets in the markdown file in plain text; use environment
 variables or system keyrings and document which env vars should be set (see Env

@@ -1,8 +1,6 @@
 ---
 description: Researches the codebase by coordinating file search and analysis
 mode: subagent
-model-hold: github-copilot/claude-sonnet-4
-model: github-copilot/gpt-4.1
 temperature: 0.3
 permission:
   write: deny

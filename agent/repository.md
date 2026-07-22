@@ -1,7 +1,6 @@
 ---
 description: Repository manager
 mode: primary
-model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:
   bash: deny

@@ -2,7 +2,6 @@
 description:
   Given a plan, returns a markdown list of sequential actions with details.
 mode: subagent
-model: github-copilot/claude-sonnet-4.5
 permission:
   write: deny
   edit: deny

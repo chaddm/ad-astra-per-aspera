@@ -2,25 +2,11 @@
 description:
   General-purpose agent with all permissions for complex, multi-step tasks and
   coding.
-type: subagent
-mode: subagent
-model: github-copilot/gpt-4.1
+mode: all
 temperature: 0.1
 permission:
-  write: allow
-  edit: allow
-  bash: allow
-  webfetch: allow
-  task: allow
-  mcp-context7: allow
-  read: allow
-  list: allow
-  glob: allow
-  grep: allow
-  utilities: allow
-  key-value-store: allow
-  vector-db: allow
   external_directory: allow
+  "*": allow
 ---
 
 You are the @general subagent. You have full permissions to perform any task,

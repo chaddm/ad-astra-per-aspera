@@ -1,10 +1,12 @@
 ---
-description: Project build orchestrator.
-mode: primary
+description:
+  General-purpose worker agent that reads and edits files as requested, delegating
+  tasks to specialized subagents as necessary.
+mode: all
 model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:
-  bash: deny
+  bash: allow
   edit: allow
   write: allow
   read: allow

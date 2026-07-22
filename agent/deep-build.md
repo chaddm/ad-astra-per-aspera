@@ -3,7 +3,6 @@ description:
   Fully autonomous subagent that plans and executes a prompt with no user
   interaction, confirmation, or inquiries.
 mode: subagent
-model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:
   write: allow

@@ -1,7 +1,6 @@
 ---
 description: Executes ffmpeg commands for video and audio processing
 mode: subagent
-model: github-copilot/gpt-4.1
 permission:
   bash: allow
   read: allow

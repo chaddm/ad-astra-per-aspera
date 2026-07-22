@@ -1,4 +1,0 @@
-#!/bin/bash
-# repository-status: display repository status
-
-git status

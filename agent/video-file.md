@@ -1,7 +1,6 @@
 ---
 description: Project orchestrator that delegates tasks to specialized subagents.
 mode: primary
-model: github-copilot/gpt-4.1
 temperature: 0.1
 permission:
   bash: allow

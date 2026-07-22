@@ -2,7 +2,6 @@
 description:
   "Manages Docker containers, images, networks, volumes, and Docker Compose stacks"
 mode: "subagent"
-model: "github-copilot/gpt-4o"
 temperature: 0.1
 permission:
   write: allow

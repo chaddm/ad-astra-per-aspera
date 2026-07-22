@@ -1,22 +1,11 @@
 ---
 description: Project orchestrator.
 mode: primary
-model: github-copilot/claude-sonnet-4.5
 reasoning_effort: medium
 text_verbosity: low
 temperature: 0.1
 permission:
-  bash: deny
-  edit: deny
-  write: deny
-  read: allow
-  grep: allow
-  glob: allow
-  list: allow
-  patch: deny
-  todowrite: allow
-  tools: allow
-  external_directory: allow
+  "*": allow
 ---
 
 # OpenCode Orchestrator Guide

@@ -163,3 +163,4 @@ temp/
 # OpenCode cache and database files
 .demongrep.db/
 .fastembed_cache/
+.todos/

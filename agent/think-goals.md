@@ -1,7 +1,6 @@
 ---
 description: Given a prompt, creates a plan and returns a markdown list of goals.
 mode: subagent
-model: github-copilot/gpt-4.1
 permission:
   write: deny
   edit: deny

@@ -1,7 +1,6 @@
 ---
 description: Executes git commands as a non-interactive git expert
 mode: subagent
-model: github-copilot/gpt-4.1
 permission:
   bash: allow
 ---

@@ -2,7 +2,6 @@
 description:
   Apply documentation edits immediately without commentary; act on instructions.
 mode: primary
-model: github-copilot/gpt-4.1
 permission:
   write: allow
   edit: allow

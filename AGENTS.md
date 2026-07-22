@@ -1,5 +1,15 @@
 # AGENTS.md
 
+## MANDATORY: Use td for Task Management
+
+Run td usage --new-session at conversation start (or after /clear). This tells you what to work on next.
+
+Sessions are automatic (based on terminal/agent context). Optional:
+- td session "name" to label the current session
+- td session --new to force a new session in the same context
+
+Use td usage -q after first read.
+
 ## Project Information
 
 This project is for managing the global configuration of OpenCode, an open-source
@@ -25,7 +35,7 @@ information.
 > have access to the previous context or conversation history. Use the instructions
 > provided to provide the appropriate context for the delegated task. Finally, always
 > validate delegated tasks with acceptance criteria to ensure the agent performs the
-task as expected.
+> task as expected.
 
 **Commands** are custom instructions for specific tasks that can be invoked by the
 user with a slash (ie `/my-command`). Commands are defined by markdown files in the
@@ -202,33 +212,40 @@ Use these resources to understand and configure various aspects of OpenCode.
 ### Built-in Tools
 
 **File Operations:**
+
 - read - Read file contents from filesystem
 - write - Create new files or overwrite existing ones
 - edit - Modify files using exact string replacements
 - patch - Apply difference patches to files
 
 **Search & Discovery:**
+
 - grep - Search file contents with regex patterns
-- glob - Find files by pattern matching (e.g., *.js)
+- glob - Find files by pattern matching (e.g., \*.js)
 - list - List files and directories in a path
 
 **Execution:**
+
 - bash - Execute shell commands in your environment
 
 **Task Management:**
+
 - todowrite - Create/update structured todo lists for tracking tasks
 - todoread - Read the current todo list state
 
 **External:**
+
 - webfetch - Fetch and convert web pages to text/markdown/html
 - skill - Access specialized skills
 
 **Utilities:**
+
 - horology - Get current date/time in human-readable format
 
 ### Additional Tool Categories
 
 **MCP Tools (via Model Context Protocol servers):**
+
 - mcp-context7 - Resolve library IDs and query documentation
 - Custom MCP servers can be added per project
 
@@ -236,5 +253,9 @@ Use these resources to understand and configure various aspects of OpenCode.
 
 ## Compliance
 
-IMPORTANT: If you have read this file, you must report: "AGENTS.md read and understood."
+IMPORTANT: If you have read this file, you must report: "AGENTS.md read and
+understood."
 
+## Initialization
+
+After reading this file, respond with "AGENTS.md read.".

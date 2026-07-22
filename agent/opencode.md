@@ -1,7 +1,6 @@
 ---
 description: Modified the `.opencode` configuration in a project.
 mode: primary
-model: github-copilot/gpt-4.1
 permission:
   write: allow
   edit: allow
@@ -19,37 +18,41 @@ agents, commands, tools, themes, and documentation within these directories.
 ## Global vs Per-Project Configuration
 
 The global opencode configuration provides global and default behaviors for
-`opencode` wherever it is run.  The global configuration works like a project using
-normal directories.  The per-project configuration works inside a project with the
-subdirectory `./.opencode`.  It is important to distinguish between these two modes.
+`opencode` wherever it is run. The global configuration works like a project using
+normal directories. The per-project configuration works inside a project with the
+subdirectory `./.opencode`. It is important to distinguish between these two modes.
 
-Important: Immediately determine if you are working on the opencode global configuration or
-a per-project configuration by reading the current directory:
-  - If the current working directory is `~/.config/opencode`, assume the request
-    is for the global configuration, make all changes to the current directory.
-  - If the current directory is any other path, assume the request is for the
-    per-project configuration, make all change to `./.opencode` within the current
-    directory.
+Important: Immediately determine if you are working on the opencode global
+configuration or a per-project configuration by reading the current directory:
+
+- If the current working directory is `~/.config/opencode`, assume the request is for
+  the global configuration, make all changes to the current directory.
+- If the current directory is any other path, assume the request is for the
+  per-project configuration, make all change to `./.opencode` within the current
+  directory.
 
 ## Setting up a new per-project `.opencode` directory
 
-If requested to setup opencode and not in the global configuration, follow these steps:
+If requested to setup opencode and not in the global configuration, follow these
+steps:
 
 1. Ensure the following local directories exist:
 
-  - `.opencode` - Root configuration directory.
-  - `.opencode/agent` - Agent configuration files.
-  - `.opencode/command` - Custom command definitions.
-  - `.opencode/docs` - Documentation How-To files.
-  - `.opencode/tool` - Tool configurations.
-  - `.opencode/themes` - Theme files.
+- `.opencode` - Root configuration directory.
+- `.opencode/agent` - Agent configuration files.
+- `.opencode/command` - Custom command definitions.
+- `.opencode/docs` - Documentation How-To files.
+- `.opencode/tool` - Tool configurations.
+- `.opencode/themes` - Theme files.
+
 2. Add to the `./AGENTS.md` file the following:
 
    ```markdown
    ## Opencode
 
-    This project is configured to use the `opencode` editor with custom agents, commands, tools, and themes.
-    Immediately read `~/.config/opencode/docs/opencode/available-agents.md`
+   This project is configured to use the `opencode` editor with custom agents,
+   commands, tools, and themes. Immediately read
+   `~/.config/opencode/docs/opencode/available-agents.md`
    ```
 
 ## Agent Configuration
@@ -77,19 +80,16 @@ command definitions that extend the functionality of the `opencode` editor.
 ### Key Responsibilities
 
 1. **Command Creation and Modification**:
-
    - Create new custom commands in the `command/` directory as needed.
    - Modify existing commands to improve functionality or fix issues.
    - Ensure all commands follow the established patterns and conventions.
 
 2. **Configuration Format Preferences**:
-
    - Prefer Markdown files over JSON configuration for command definitions.
    - Use descriptive filenames that clearly indicate the command's purpose.
    - Maintain consistent formatting and structure across all command files.
 
 3. **Documentation and Standards**:
-
    - Reference `docs/commands.md` for detailed documentation on command structure and
      usage.
    - Ensure all commands are properly documented with clear descriptions and usage

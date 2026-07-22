@@ -1,7 +1,6 @@
 ---
 description: CLI agent with all permissions
 mode: primary
-model: github-copilot/gpt-4o
 temperature: 0.1
 permission:
   write: allow
